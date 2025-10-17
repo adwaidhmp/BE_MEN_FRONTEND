@@ -17,12 +17,24 @@ export const fetchOrders = createAsyncThunk(
   }
 );
 
+// Fetch single order detail
+export const fetchOrderDetail = createAsyncThunk(
+  "order/fetchOrderDetail",
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const res = await api.get(`/my-orders/${orderId}/`);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
 // Place order (single or multiple)
 export const placeOrder = createAsyncThunk(
   "order/placeOrder",
   async ({ items, shipping_address, phone, payment_method }, { rejectWithValue }) => {
     try {
-      // Payload format expected by backend
       const payload = {
         orders: items.map((i) => ({
           product: i.product?.id || i.id,
@@ -34,7 +46,7 @@ export const placeOrder = createAsyncThunk(
       };
 
       const res = await api.post("/checkout/", payload);
-      return res.data; // Contains orders and Razorpay info if applicable
+      return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
     }
@@ -60,14 +72,16 @@ const orderSlice = createSlice({
   name: "order",
   initialState: {
     orders: [],
-    lastOrder: null,      // store last placed order (needed for checkout page)
-    razorpayInfo: null,   // store Razorpay order info if payment method is RAZORPAY
+    currentOrder: null,   // store currently viewed order detail
+    lastOrder: null,
+    razorpayInfo: null,
     loading: false,
     error: null,
   },
   reducers: {
     clearOrders: (state) => {
       state.orders = [];
+      state.currentOrder = null;
       state.lastOrder = null;
       state.razorpayInfo = null;
       state.loading = false;
@@ -90,6 +104,26 @@ const orderSlice = createSlice({
         state.error = action.payload;
       })
 
+      // -------- fetchOrderDetail ----------
+      .addCase(fetchOrderDetail.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrderDetail.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentOrder = action.payload;
+        
+        // Update in orders array if it exists
+        const index = state.orders.findIndex(o => o.id === action.payload.id);
+        if (index !== -1) {
+          state.orders[index] = action.payload;
+        }
+      })
+      .addCase(fetchOrderDetail.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
       // -------- placeOrder ----------
       .addCase(placeOrder.pending, (state) => {
         state.loading = true;
@@ -99,10 +133,8 @@ const orderSlice = createSlice({
         state.loading = false;
         const data = action.payload;
 
-        // Store last order for redirect/checkout page
         state.lastOrder = data;
 
-        // If Razorpay, store its info
         if (data.razorpay_order_id) {
           state.razorpayInfo = {
             razorpay_order_id: data.razorpay_order_id,
@@ -114,7 +146,6 @@ const orderSlice = createSlice({
           state.razorpayInfo = null;
         }
 
-        // Optionally add orders to state.orders
         state.orders.push(...(data.orders || []));
       })
       .addCase(placeOrder.rejected, (state, action) => {
@@ -130,9 +161,16 @@ const orderSlice = createSlice({
       .addCase(cancelOrder.fulfilled, (state, action) => {
         state.loading = false;
         const { orderId } = action.payload;
+        
+        // Update in orders array
         state.orders = state.orders.map((o) =>
           o.id === orderId ? { ...o, order_status: "CANCELLED", payment_status: "REFUNDED" } : o
         );
+        
+        // Update currentOrder if it's the same order
+        if (state.currentOrder?.id === orderId) {
+          state.currentOrder = { ...state.currentOrder, order_status: "CANCELLED", payment_status: "REFUNDED" };
+        }
       })
       .addCase(cancelOrder.rejected, (state, action) => {
         state.loading = false;

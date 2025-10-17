@@ -2,14 +2,21 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api";
 import { toast } from "react-toastify";
+import { fetchCart,resetCart } from "./cartSlice";         // adjust the correct path
+import { fetchWishlist,resetWishlist } from "./wishlistSlice"; // adjust the correct path
+
 
 // ✅ LOGIN
+
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
-  async ({ email, password, navigate }, { rejectWithValue }) => {
+  async ({ email, password, navigate }, {dispatch, rejectWithValue }) => {
     try {
       const res = await api.post("login/", { email, password });
       const user = res.data.user || res.data;
+
+      dispatch(fetchCart());
+      dispatch(fetchWishlist());
 
       toast.success("Login successful!");
       navigate(user?.is_staff ? "/admin" : "/home", { replace: true });
@@ -32,6 +39,9 @@ export const logoutUser = createAsyncThunk(
 
       // Clear Redux state immediately
       dispatch(setUser(null));
+      dispatch(resetCart());
+      dispatch(resetWishlist());
+
 
       // Clear sessionStorage
       sessionStorage.removeItem("user");

@@ -1,12 +1,21 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { CheckCircle, Package, Truck, Home, ArrowRight } from "lucide-react";
+import { CheckCircle, Package, Truck, Home, ArrowRight, Crown } from "lucide-react";
 
 function OrderSuccess() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { order } = location.state || {};
+  const { order, orderSummary } = location.state || {};
+  const summary = orderSummary || order;
   const [countdown, setCountdown] = useState(10);
+
+  const totalAmount =
+  summary?.total_amount !== undefined
+    ? summary.total_amount
+    : summary?.amount
+    ? summary.amount / 100
+    : 0;
+
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -24,129 +33,190 @@ function OrderSuccess() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center p-16">
-      <div className="max-w-2xl w-full">
-        {/* Success Animation */}
-        <div className="flex justify-center mb-8">
-          <div className="relative">
-            <div className="absolute inset-0 bg-green-400 rounded-full blur-3xl opacity-30 animate-pulse"></div>
-            <div className="relative bg-white rounded-full p-6 shadow-2xl">
-              <CheckCircle className="w-24 h-24 text-green-500 animate-[bounce_1s_ease-in-out]" strokeWidth={2} />
+    <div className="min-h-screen bg-amber-50 py-8 px-4">
+      <div className="w-full max-w-6xl mx-auto">
+        {/* Success Animation & Heading - Centered */}
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <div className="absolute inset-0 bg-amber-400 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+              <div className="relative bg-white rounded-full p-6 shadow-lg border border-amber-200">
+                <CheckCircle
+                  className="w-20 h-20 text-amber-600"
+                  strokeWidth={2}
+                />
+              </div>
             </div>
           </div>
+
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Crown className="w-8 h-8 text-amber-600" />
+            <h1 className="font-serif text-4xl text-stone-900">
+              Order Confirmed
+            </h1>
+          </div>
+          <p className="text-lg text-stone-600 font-light">
+            {summary?.message ||
+              "Thank you for your purchase. Your collection is being prepared."}
+          </p>
         </div>
 
-        {/* Main Content Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-3">
-              Order Placed Successfully!
-            </h1>
-            <p className="text-lg text-gray-600">
-              Thank you for your purchase. Your order has been confirmed.
-            </p>
-          </div>
-
-          {/* Order Details */}
-          {order && (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 mb-6 border border-green-200">
-              <div className="flex items-center justify-between mb-4">
+        {/* Two Column Layout - Desktop, Stacked on Mobile */}
+        <div className="grid lg:grid-cols-2 gap-6 mb-6">
+          {/* Left Column - Order Summary */}
+          <div className="bg-white rounded-xl border border-stone-200 p-6">
+            <div className="bg-stone-50 rounded-lg p-6 border border-stone-200">
+              <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <Package className="w-6 h-6 text-green-600" />
-                  <h2 className="text-xl font-semibold text-gray-900">Order Details</h2>
+                  <Package className="w-6 h-6 text-amber-600" />
+                  <h2 className="font-serif text-xl text-stone-900">
+                    Order Summary
+                  </h2>
                 </div>
-                <span className="px-4 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                  {order.order_status || "PENDING"}
+                <span className="px-4 py-1.5 bg-amber-100 text-amber-700 rounded-full text-sm font-medium border border-amber-200">
+                  CONFIRMED
                 </span>
               </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Order ID</p>
-                  <p className="font-semibold text-gray-900">#{order.id}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Payment Method</p>
-                  <p className="font-semibold text-gray-900">{order.payment_method || "COD"}</p>
-                </div>
-                {order.total_amount && (
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Total Amount</p>
-                    <p className="font-semibold text-gray-900">${order.total_amount}</p>
-                  </div>
-                )}
-                {order.phone && (
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Contact</p>
-                    <p className="font-semibold text-gray-900">{order.phone}</p>
-                  </div>
-                )}
-              </div>
 
-              {order.shipping_address && (
-                <div className="mt-4 pt-4 border-t border-green-200">
-                  <p className="text-sm text-gray-500 mb-1">Shipping Address</p>
-                  <p className="text-gray-900">{order.shipping_address}</p>
-                </div>
+              {summary && (
+                <>
+                  {/* Total Info */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-white rounded-lg p-4 border border-stone-200">
+                      <p className="text-sm text-stone-500 mb-1 font-light">Total Amount</p>
+                      <p className="text-2xl font-serif font-normal text-amber-600">
+                        ₹{totalAmount}
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-stone-200">
+                      <p className="text-sm text-stone-500 mb-1 font-light">Total Orders</p>
+                      <p className="text-2xl font-serif font-normal text-stone-900">
+                        {summary.orders?.length || 1}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Individual Orders */}
+                  <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                    {summary.orders?.map((o, index) => (
+                      <div
+                        key={index}
+                        className="p-4 bg-white border border-stone-200 rounded-lg hover:border-amber-300 transition-colors"
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-xs font-medium text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                            Order {index + 1}
+                          </span>
+                          <span className="text-lg font-serif font-normal text-stone-900">
+                            ₹{o.amount}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                          <div>
+                            <p className="text-xs text-stone-500 mb-1 font-light">Product ID</p>
+                            <p className="font-medium text-stone-900">#{o.product}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-stone-500 mb-1 font-light">Quantity</p>
+                            <p className="font-medium text-stone-900">{o.quantity}</p>
+                          </div>
+                          <div className="col-span-2">
+                            <p className="text-xs text-stone-500 mb-1 font-light">Contact</p>
+                            <p className="font-medium text-stone-900">{o.phone}</p>
+                          </div>
+                        </div>
+
+                        {o.shipping_address && (
+                          <div className="pt-3 border-t border-stone-200">
+                            <p className="text-xs text-stone-500 mb-1 font-light">Shipping Address</p>
+                            <p className="text-sm text-stone-900 font-light">{o.shipping_address}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
-            </div>
-          )}
-
-          {/* What's Next */}
-          <div className="bg-gray-50 rounded-xl p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Truck className="w-5 h-5 text-blue-600" />
-              What's Next?
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                  1
-                </div>
-                <p className="text-gray-700">We'll send you a confirmation email with your order details</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                  2
-                </div>
-                <p className="text-gray-700">Your order will be processed and prepared for shipping</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                  3
-                </div>
-                <p className="text-gray-700">Track your order status from your account dashboard</p>
-              </div>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <button
-              onClick={() => navigate("/orders")}
-              className="flex-1 px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all hover:shadow-lg flex items-center justify-center gap-2 group"
-            >
-              <Package className="w-5 h-5" />
-              View My Orders
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
-            
-            <button
-              onClick={() => navigate("/")}
-              className="flex-1 px-6 py-4 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all flex items-center justify-center gap-2"
-            >
-              <Home className="w-5 h-5" />
-              Continue Shopping
-            </button>
+          {/* Right Column - What's Next */}
+          <div className="bg-white rounded-xl border border-stone-200 p-6">
+            <div className="bg-stone-50 rounded-lg p-6 h-full border border-stone-200">
+              <h3 className="font-serif text-xl text-stone-900 mb-6 flex items-center gap-2">
+                <Truck className="w-6 h-6 text-amber-600" />
+                What's Next?
+              </h3>
+
+              <div className="space-y-6 mb-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-stone-900 text-amber-50 flex items-center justify-center text-lg font-medium flex-shrink-0 border border-stone-900">
+                    1
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-stone-900 mb-1">Email Confirmation</h4>
+                    <p className="text-stone-600 font-light">
+                      We'll send you a confirmation email with your order details
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-stone-900 text-amber-50 flex items-center justify-center text-lg font-medium flex-shrink-0 border border-stone-900">
+                    2
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-stone-900 mb-1">Order Processing</h4>
+                    <p className="text-stone-600 font-light">
+                      Your order will be processed and prepared for shipping
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-stone-900 text-amber-50 flex items-center justify-center text-lg font-medium flex-shrink-0 border border-stone-900">
+                    3
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-stone-900 mb-1">Track Your Order</h4>
+                    <p className="text-stone-600 font-light">
+                      Track your order status from your account dashboard
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <button
+                  onClick={() => navigate("/orders")}
+                  className="w-full px-6 py-4 bg-stone-900 text-amber-50 rounded-lg font-medium hover:bg-stone-800 transition-all flex items-center justify-center gap-2 group border border-stone-900"
+                >
+                  <Package className="w-5 h-5" />
+                  View My Orders
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                <button
+                  onClick={() => navigate("/home")}
+                  className="w-full px-6 py-4 bg-white border border-stone-300 text-stone-700 rounded-lg font-medium hover:bg-stone-50 transition-all flex items-center justify-center gap-2"
+                >
+                  <Home className="w-5 h-5" />
+                  Continue Shopping
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Auto Redirect Notice */}
+        {/* Auto Redirect Notice - Bottom Center */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-3 bg-white rounded-full px-6 py-3 shadow-md">
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <p className="text-sm text-gray-600">
-              Redirecting to home in <span className="font-bold text-green-600">{countdown}</span> seconds
+          <div className="inline-flex items-center gap-3 bg-white rounded-full px-6 py-3 border border-stone-200">
+            <div className="w-3 h-3 bg-amber-600 rounded-full animate-pulse"></div>
+            <p className="text-sm text-stone-600 font-light">
+              Returning to collection in{" "}
+              <span className="font-medium text-amber-600">{countdown}</span> seconds
             </p>
           </div>
         </div>
