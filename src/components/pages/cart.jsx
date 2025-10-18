@@ -61,7 +61,7 @@ function Cart() {
             {cart.length} curated piece{cart.length !== 1 ? 's' : ''} awaiting your decision
           </p>
         </div>
-
+        {console.log('Cart items:', cart)}
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Cart Items */}
           <div className="flex-1">
@@ -77,7 +77,7 @@ function Cart() {
                     {/* Image Container */}
                     <div className="relative aspect-[4/3] bg-stone-100 overflow-hidden">
                       <img
-                        src={product.product_image}
+                        src={`http://127.0.0.1:8000${product.product_image}`}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
@@ -111,13 +111,17 @@ function Cart() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              dispatch(updateQuantity({ productId: product.id, quantity: -1 }));
+                              if (item.quantity > 1) { // Prevent reducing below 1
+                                dispatch(updateQuantity({ productId: product.id, quantity: -1 }));
+                              }
                             }}
-                            className="w-8 h-8 rounded-full border border-stone-300 flex items-center justify-center hover:bg-stone-100 transition-colors"
+                            disabled={item.quantity === 1} // optional: disable at 1
+                            className={`w-8 h-8 rounded-full border flex items-center justify-center ${
+                              item.quantity === 1 ? "text-stone-300 cursor-not-allowed" : "hover:bg-stone-100"
+                            }`}
                           >
                             <Minus className="w-3 h-3" />
                           </button>
-                          
                           <span className="text-sm font-medium text-stone-900 min-w-8 text-center">
                             {item.quantity}
                           </span>
@@ -162,7 +166,7 @@ function Cart() {
                             }}
                             className="px-4 py-2 bg-stone-900 text-amber-50 rounded-lg text-sm font-medium hover:bg-stone-800 transition-all"
                           >
-                            Acquire
+                            Buy Now
                           </button>
                         </div>
                       </div>
@@ -222,7 +226,7 @@ function Cart() {
                   }
                   className="w-full bg-amber-600 text-white py-3 rounded-lg font-medium hover:bg-amber-700 transition-all"
                 >
-                  Acquire All Pieces
+                  Buy All Pieces
                 </button>
                 
                 <button

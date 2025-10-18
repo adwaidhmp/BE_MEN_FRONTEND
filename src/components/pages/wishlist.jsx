@@ -91,7 +91,7 @@ function Wishlist() {
             <span className="text-sm font-medium">Clear All</span>
           </button>
         </div>
-
+        {console.log('Wishlist items:', wishlist)}
         {/* Wishlist Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {wishlist.map((item) => {
@@ -107,7 +107,7 @@ function Wishlist() {
                 {/* Image Container */}
                 <div className="relative aspect-[4/3] bg-stone-100 overflow-hidden">
                   <img
-                    src={product.product_image}
+                    src={`http://127.0.0.1:8000${product.product_image}`}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />

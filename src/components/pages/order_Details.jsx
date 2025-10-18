@@ -59,7 +59,7 @@ function OrderDetailPage() {
   const canCancelOrder = (status) => {
     return status === "PENDING" || status === "PROCESSING";
   };
-
+{console.log(order)}
   if (loading) {
     return (
       <div className="min-h-screen bg-amber-50 flex items-center justify-center">
@@ -88,8 +88,9 @@ function OrderDetailPage() {
       </div>
     );
   }
-
+  
   return (
+    
     <div className="min-h-screen bg-amber-50 pt-24 pb-12">
       <div className="w-full px-4 max-w-5xl mx-auto">
         {/* Back Button */}
@@ -142,11 +143,12 @@ function OrderDetailPage() {
                 Product Details
               </h2>
               
-              <div className="flex gap-4">
+              <div className="flex gap-4 cursor-pointer" 
+              onClick={() => navigate(`/product/${order.product.id}`)}>
                 <div className="w-24 h-24 bg-stone-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-stone-200">
                   {order.product?.image ? (
                     <img
-                      src={order.product.image}
+                      src={`http://127.0.0.1:8000${order.product.product_image}`}
                       alt={order.product?.name || "Product"}
                       className="w-full h-full object-cover"
                     />

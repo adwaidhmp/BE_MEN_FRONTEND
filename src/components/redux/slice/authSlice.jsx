@@ -1,13 +1,11 @@
-// src/redux/slices/authSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api";
 import { toast } from "react-toastify";
-import { fetchCart,resetCart } from "./cartSlice";         // adjust the correct path
-import { fetchWishlist,resetWishlist } from "./wishlistSlice"; // adjust the correct path
+import { fetchCart,resetCart } from "./cartSlice";         
+import { fetchWishlist,resetWishlist } from "./wishlistSlice"; 
 
 
-// ✅ LOGIN
-
+//  LOGIN
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async ({ email, password, navigate }, {dispatch, rejectWithValue }) => {
@@ -29,27 +27,22 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// ✅ LOGOUT
+//  LOGOUT
 export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
   async (_, { dispatch }) => {
     try {
-      // Call the backend logout endpoint
       await api.post("logout/");
 
-      // Clear Redux state immediately
       dispatch(setUser(null));
       dispatch(resetCart());
       dispatch(resetWishlist());
 
-
-      // Clear sessionStorage
       sessionStorage.removeItem("user");
 
-      // Show toast
       toast.info("Logged out successfully");
 
-      return null; // optional, nothing to return
+      return null; 
     } catch (err) {
       toast.error("Logout failed");
       console.error(err);
@@ -58,7 +51,7 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
-// ✅ FETCH USER PROFILE
+//  FETCH USER PROFILE
 export const fetchUserProfile = createAsyncThunk(
   "auth/fetchUserProfile",
   async (_, { rejectWithValue }) => {
@@ -73,7 +66,7 @@ export const fetchUserProfile = createAsyncThunk(
   }
 );
 
-// ✅ UPDATE USER PROFILE
+//  UPDATE USER PROFILE
 export const updateUserProfile = createAsyncThunk(
   "auth/updateUserProfile",
   async (formData, { rejectWithValue }) => {
@@ -91,7 +84,7 @@ export const updateUserProfile = createAsyncThunk(
   }
 );
 
-// ✅ CHANGE PASSWORD
+//  CHANGE PASSWORD
 export const changePassword = createAsyncThunk(
   "auth/changePassword",
   async ({ old_password, new_password }, { rejectWithValue }) => {
@@ -128,9 +121,10 @@ const authSlice = createSlice({
       else sessionStorage.removeItem("user");
     },
   },
+  
   extraReducers: (builder) => {
     builder
-      // 🔹 Login
+      //  Login
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -145,13 +139,13 @@ const authSlice = createSlice({
         state.error = action.payload;
       })
 
-      // 🔹 Logout
+      //  Logout
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
         sessionStorage.removeItem("user");
       })
 
-      // 🔹 Fetch Profile
+      //  Fetch Profile
       .addCase(fetchUserProfile.pending, (state) => {
         state.loading = true;
       })
@@ -164,7 +158,7 @@ const authSlice = createSlice({
         state.loading = false;
       })
 
-      // 🔹 Update Profile
+      //  Update Profile
       .addCase(updateUserProfile.pending, (state) => {
         state.loading = true;
       })
@@ -177,7 +171,7 @@ const authSlice = createSlice({
         state.loading = false;
       })
 
-      // 🔹 Change Password
+      //  Change Password
       .addCase(changePassword.pending, (state) => {
         state.loading = true;
       })
@@ -190,10 +184,9 @@ const authSlice = createSlice({
   },
 });
 
-// ✅ EXPORT ACTIONS & SELECTORS
+
 export const { setUser } = authSlice.actions;
 
-// Selector to access user state
 export const selectUser = (state) => state.auth.user;
 
 export default authSlice.reducer;

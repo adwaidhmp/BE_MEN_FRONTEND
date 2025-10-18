@@ -95,6 +95,7 @@ function OrdersPage() {
           </div>
         ) : (
           <div className="max-w-7xl mx-auto space-y-4">
+            {console.log(orders)}
             {orders.map((order) => (
               <div
                 key={order.id}
@@ -107,12 +108,12 @@ function OrdersPage() {
                     <div className="w-20 h-20 bg-stone-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-stone-200">
                       {order.product?.image ? (
                         <img
-                          src={order.product.image}
+                          src={`http://127.0.0.1:8000${order.product.product_image}`}
                           alt={order.product?.name || "Product"}
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <Package className="w-8 h-8 text-stone-400" />
+                        <Package className="w-8 h-8 text-stone-800" />
                       )}
                     </div>
 

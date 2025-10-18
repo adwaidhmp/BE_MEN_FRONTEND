@@ -1,8 +1,6 @@
-// redux/slice/orderSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api";
 
-// --------------------- Thunks ---------------------
 
 // Fetch all user orders
 export const fetchOrders = createAsyncThunk(
@@ -66,13 +64,12 @@ export const cancelOrder = createAsyncThunk(
   }
 );
 
-// --------------------- Slice ---------------------
 
 const orderSlice = createSlice({
   name: "order",
   initialState: {
     orders: [],
-    currentOrder: null,   // store currently viewed order detail
+    currentOrder: null,  
     lastOrder: null,
     razorpayInfo: null,
     loading: false,
@@ -90,7 +87,7 @@ const orderSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // -------- fetchOrders ----------
+      // fetchOrders 
       .addCase(fetchOrders.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -104,7 +101,7 @@ const orderSlice = createSlice({
         state.error = action.payload;
       })
 
-      // -------- fetchOrderDetail ----------
+      //  fetchOrderDetail
       .addCase(fetchOrderDetail.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -112,7 +109,7 @@ const orderSlice = createSlice({
       .addCase(fetchOrderDetail.fulfilled, (state, action) => {
         state.loading = false;
         state.currentOrder = action.payload;
-        
+
         // Update in orders array if it exists
         const index = state.orders.findIndex(o => o.id === action.payload.id);
         if (index !== -1) {
@@ -124,7 +121,7 @@ const orderSlice = createSlice({
         state.error = action.payload;
       })
 
-      // -------- placeOrder ----------
+      //  placeOrder 
       .addCase(placeOrder.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -153,7 +150,7 @@ const orderSlice = createSlice({
         state.error = action.payload;
       })
 
-      // -------- cancelOrder ----------
+      //  cancelOrder
       .addCase(cancelOrder.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -161,12 +158,12 @@ const orderSlice = createSlice({
       .addCase(cancelOrder.fulfilled, (state, action) => {
         state.loading = false;
         const { orderId } = action.payload;
-        
+
         // Update in orders array
         state.orders = state.orders.map((o) =>
           o.id === orderId ? { ...o, order_status: "CANCELLED", payment_status: "REFUNDED" } : o
         );
-        
+
         // Update currentOrder if it's the same order
         if (state.currentOrder?.id === orderId) {
           state.currentOrder = { ...state.currentOrder, order_status: "CANCELLED", payment_status: "REFUNDED" };

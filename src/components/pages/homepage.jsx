@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Search, Tag, Filter, Clock, Heart, ArrowRight } from "lucide-react";
+import { Search, Filter, Clock, Heart, ArrowRight } from "lucide-react";
 import Footer from "../otherpages/footer";
 import { addToCart, fetchCart } from "../redux/slice/cartSlice";
 import { toast } from "react-toastify";
@@ -17,6 +17,7 @@ function Homepage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const user = useSelector((state) => state.auth.user);
   const { cart } = useSelector((state) => state.cart);
 
   useEffect(() => {
@@ -65,6 +66,11 @@ function Homepage() {
   };
 
   const handleAddToCart = (product) => {
+  if (!user) {
+    toast.error("Please log in to add items to your cart.");
+    navigate("/login");
+    return;
+  }    
     const inCart = cart.find((item) => item.product.id === product.id);
     const quantity = inCart ? inCart.quantity + 1 : 1;
     dispatch(addToCart({ productId: product.id, quantity }));
@@ -77,6 +83,7 @@ function Homepage() {
     { value: "watch", label: "Watches" },
     { value: "perfume", label: "Perfumes" },
     { value: "cap", label: "Caps" },
+    { value: "wallet", label: "Wallets" },
   ];
 
   return (

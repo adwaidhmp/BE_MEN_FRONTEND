@@ -327,7 +327,7 @@ function ProductDetails() {
                   }`}
                 >
                   <Zap className="w-5 h-5" />
-                  Acquire Now
+                  Buy Now
                 </button>
               </div>
             </div>

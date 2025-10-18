@@ -1,13 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import api from "../../api"; // axios instance with withCredentials: true
+import api from "../../api";
 
-// ✅ Fetch all wishlist items
+//  Fetch wishlist items from server
 export const fetchWishlist = createAsyncThunk(
   "wishlist/fetchWishlist",
   async (_, { rejectWithValue }) => {
     try {
       const res = await api.get("wishlist/");
-      // Django returns [{ id, product: {...} }, ...]
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || "Failed to fetch wishlist");
@@ -15,33 +14,32 @@ export const fetchWishlist = createAsyncThunk(
   }
 );
 
-// ✅ Add product to wishlist
 export const addToWishlist = createAsyncThunk(
   "wishlist/addToWishlist",
   async (productId, { dispatch, rejectWithValue }) => {
     try {
       await api.post("wishlist/", { product_id: productId });
-      dispatch(fetchWishlist()); // refresh list
+      dispatch(fetchWishlist()); 
     } catch (err) {
       return rejectWithValue(err.response?.data || "Failed to add to wishlist");
     }
   }
 );
 
-// ✅ Remove a single product
+//  Remove a single product
 export const removeFromWishlist = createAsyncThunk(
   "wishlist/removeFromWishlist",
   async (productId, { dispatch, rejectWithValue }) => {
     try {
       await api.delete(`wishlist/${productId}/`);
-      dispatch(fetchWishlist()); // refresh list
+      dispatch(fetchWishlist()); 
     } catch (err) {
       return rejectWithValue(err.response?.data || "Failed to remove from wishlist");
     }
   }
 );
 
-// ✅ Clear entire wishlist
+//  Clear entire wishlist
 export const clearWishlist = createAsyncThunk(
   "wishlist/clearWishlist",
   async (_, { rejectWithValue }) => {
