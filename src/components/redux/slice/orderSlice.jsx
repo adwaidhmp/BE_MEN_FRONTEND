@@ -29,27 +29,39 @@ export const fetchOrderDetail = createAsyncThunk(
 );
 
 // Place order (single or multiple)
+// Only creates orders on COD. For Razorpay, backend just returns Razorpay order info.
 export const placeOrder = createAsyncThunk(
   "order/placeOrder",
   async ({ items, shipping_address, phone, payment_method }, { rejectWithValue }) => {
     try {
-      const payload = {
-        orders: items.map((i) => ({
-          product: i.product?.id || i.id,
-          quantity: i.quantity,
-          shipping_address,
-          phone,
-          payment_method,
-        })),
-      };
+      if (!items || items.length === 0) throw new Error("No items in cart");
 
-      const res = await api.post("/checkout/", payload);
+      const orders = items.map((i) => ({
+        product: i.product?.id || i.id,
+        quantity: i.quantity,
+        payment_method,
+        shipping_address,
+        phone,
+      }));
+
+      const payload = { orders };
+
+      // Use different endpoints for COD and Razorpay
+      const endpoint =
+        payment_method === "COD"
+          ? "/checkout/cod/"
+          : "/checkout/razorpay/";
+
+      const res = await api.post(endpoint, payload);
       return res.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || err.message);
+      console.error("PlaceOrder Error:", err);
+      return rejectWithValue(err.response?.data || { error: err.message });
     }
   }
 );
+  
+
 
 // Cancel order
 export const cancelOrder = createAsyncThunk(

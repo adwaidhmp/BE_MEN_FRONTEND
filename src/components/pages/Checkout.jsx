@@ -66,55 +66,108 @@ function CheckoutPage() {
             document.body.appendChild(script);
         });
 
-    const handleCheckout = async (values, { setSubmitting }) => {
-        setSubmitting(true);
+const handleCheckout = async (values, { setSubmitting }) => {
+  setSubmitting(true);
 
-        const shipping_address = `${values.name}, ${values.street}, ${values.city}, ${values.state}, ${values.country} - ${values.pincode}`;
+  try {
+    if (!items || items.length === 0) {
+      toast.error("No items in cart");
+      setSubmitting(false);
+      return;
+    }
 
-        const payload = {
-            items,
-            shipping_address,
-            phone: values.phone,
-            payment_method: values.payment_method,
-        };
+    const shipping_address = `${values.name}, ${values.street}, ${values.city}, ${values.state}, ${values.country} - ${values.pincode}`;
 
-        try {
-            if (values.payment_method === "RAZORPAY") {
-                const res = await loadRazorpayScript();
-                if (!res) {
-                    toast.error("Razorpay SDK failed to load. Are you online?");
-                    setSubmitting(false);
-                    return;
-                }
-            }
-
-            const resultAction = await dispatch(placeOrder(payload));
-
-            if (placeOrder.fulfilled.match(resultAction)) {
-                const orderData = resultAction.payload;
-
-                if (values.payment_method === "COD") {
-                    toast.success("Order placed successfully!");
-                    dispatch(fetchOrders());
-                    navigate("/order-success", { state: { order: orderData } });
-                } else if (values.payment_method === "RAZORPAY") {
-                    openRazorpay({
-                        razorpay_order_id: orderData.razorpay_order_id,
-                        razorpay_key: orderData.razorpay_key,
-                        amount: orderData.amount,
-                        currency: orderData.currency,
-                    });
-                }
-            } else {
-                toast.error(resultAction.payload || "Checkout failed");
-            }
-        } catch (err) {
-            console.error(err);
-            toast.error("Checkout failed");
-        } finally {
-            setSubmitting(false);
-        }
+    const payload = {
+      items,
+      shipping_address,
+      phone: values.phone,
+      payment_method: values.payment_method,
     };
+
+    const resultAction = await dispatch(placeOrder(payload));
+
+    if (!placeOrder.fulfilled.match(resultAction)) {
+      const errorMsg = resultAction.payload?.error || resultAction.error?.message || "Checkout failed";
+      toast.error(errorMsg);
+      setSubmitting(false);
+      return;
+    }
+
+    const orderData = resultAction.payload;
+
+    // ✅ COD flow
+    if (values.payment_method === "COD") {
+      toast.success("Order placed successfully!");
+      dispatch(fetchOrders());
+      navigate("/order-success", { state: { order: orderData } });
+      return;
+    }
+
+    // ✅ Razorpay flow
+    if (values.payment_method === "RAZORPAY") {
+      // Load Razorpay SDK
+      const loaded = await new Promise((resolve) => {
+        if (window.Razorpay) return resolve(true);
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+      });
+
+      if (!loaded) {
+        toast.error("Razorpay SDK failed to load");
+        setSubmitting(false);
+        return;
+      }
+
+      const options = {
+        key: orderData.razorpay_key,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "BE MEN",
+        description: "Order Payment",
+        order_id: orderData.razorpay_order_id,
+        handler: async function (response) {
+          try {
+            await api.post("/checkout/razorpay/verify/", {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+              orders_payload: orderData.orders_payload,
+            });
+
+            toast.success("Payment successful!");
+            dispatch(fetchOrders());
+            navigate("/order-success", { state: { order: orderData } });
+          } catch (err) {
+            console.error(err);
+            toast.error("Payment verification failed. Order not placed.");
+          }
+        },
+        prefill: {
+          name: values.name,
+          email: "user@example.com", // optional
+          contact: values.phone,
+        },
+        theme: { color: "#b45309" },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    }
+  } catch (err) {
+    console.error("Checkout Error:", err);
+    toast.error("Checkout failed due to unexpected error");
+  } finally {
+    setSubmitting(false);
+  }
+};
+
+
+
+
 
     const validationSchema = Yup.object().shape({
         name: Yup.string().required("Name is required"),

@@ -66,7 +66,7 @@ function Signup() {
           { headers: { "Content-Type": "multipart/form-data" }, withCredentials: true });
 
         toast.success("Signed up successfully");
-        navigate("/login");
+        navigate("/login",{ replace: true });
       } catch (error) {
         if (error.response?.data?.email) {
           toast.error(error.response.data.email[0]);
@@ -277,6 +277,9 @@ function Signup() {
                       value={formik.values.password}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
+                      onCopy={(e) => e.preventDefault()}
+                      onPaste={(e) => e.preventDefault()}
+                      onCut={(e) => e.preventDefault()}
                       className="appearance-none block w-full px-4 py-3 border border-stone-300 rounded-lg bg-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors pr-12"
                       placeholder="••••••••"
                     />
@@ -310,6 +313,9 @@ function Signup() {
                       value={formik.values.password2}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
+                      onCopy={(e) => e.preventDefault()}
+                      onPaste={(e) => e.preventDefault()}
+                      onCut={(e) => e.preventDefault()}
                       className="appearance-none block w-full px-4 py-3 border border-stone-300 rounded-lg bg-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors pr-12"
                       placeholder="••••••••"
                     />
