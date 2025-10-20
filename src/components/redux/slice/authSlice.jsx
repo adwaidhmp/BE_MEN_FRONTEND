@@ -8,16 +8,19 @@ import { fetchWishlist,resetWishlist } from "./wishlistSlice";
 //  LOGIN
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
-  async ({ email, password, navigate }, {dispatch, rejectWithValue }) => {
+  async ({ email, password,  }, {dispatch, rejectWithValue }) => {
     try {
       const res = await api.post("login/", { email, password });
       const user = res.data.user || res.data;
+      console.log(user)
+      dispatch(setUser(user));
 
-      dispatch(fetchCart());
-      dispatch(fetchWishlist());
+      await dispatch(fetchCart());
+      await dispatch(fetchWishlist());
 
       toast.success("Login successful!");
-      navigate(user?.is_staff ? "/admin" : "/home", { replace: true });
+      // navigate(user?.is_staff ? "/admin" : "/home", { replace: true });
+      console.log(user)
       return user;
     } catch (err) {
       const message = err.response?.data?.detail || "Login failed";

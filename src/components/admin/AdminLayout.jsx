@@ -1,117 +1,129 @@
-import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/Authcontext";
+import { Link, Outlet, useLocation } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
+import { logoutUser, selectUser } from "../redux/slice/authSlice";
+import { Crown, LogOut, Users, Package, ShoppingBag, MessageCircle, LayoutDashboard } from "lucide-react";
 
 export default function AdminLayout() {
-  const { user, setUser } = useAuth();
-  const navigate = useNavigate();
+  const user = useSelector(selectUser);
+  const dispatch = useDispatch();
   const location = useLocation();
 
-  const handleLogout = () => {
-    setUser(null);
-    toast.success("Logged out successfully");
-    navigate("/home");
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      toast.success("Logged out successfully");
+    } catch (err) {
+      toast.error("Failed to logout");
+      console.error(err);
+    }
   };
 
+  if (!user) return null;
+
+  const navItems = [
+    { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
+    { path: "/admin/users", label: "Users", icon: Users },
+    { path: "/admin/orders", label: "Orders", icon: ShoppingBag },
+    { path: "/admin/products", label: "Products", icon: Package },
+    { path: "/admin/feedback", label: "Feedbacks", icon: MessageCircle },
+  ];
+
+  const isActive = (path) => location.pathname === path;
+
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-gray-200">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-amber-50">
       {/* Sidebar */}
-      <aside className="w-full lg:w-64 bg-gray-800 text-white p-6 flex-shrink-0 lg:h-screen lg:sticky top-0">
+      <aside className="w-full lg:w-64 bg-stone-900 text-amber-50 p-6 flex-shrink-0 lg:h-screen lg:sticky top-0">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">Admin Panel</h1>
-          <p className="text-sm text-gray-400">{user?.name}</p>
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-amber-600 flex items-center justify-center">
+              <Crown className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="font-serif text-xl">Admin Panel</h1>
+              <p className="text-xs text-amber-200/70 font-light">{user?.name}</p>
+            </div>
+          </div>
         </div>
 
-        {/* Responsive Nav + Logout */}
-        <div className="flex flex-col lg:flex-col gap-4">
-          {/* Small screen: nav & logout in one row */}
-          <div className="flex flex-wrap justify-between items-center gap-4 lg:hidden">
-            <nav className="flex flex-wrap gap-4 text-lg">
-              <Link
-                to="/admin"
-                className={location.pathname === "/admin" ? "text-yellow-400" : "hover:text-yellow-400"}
-              >
-                Dashboard
-              </Link>
-              <Link
-                to="/admin/users"
-                className={location.pathname === "/admin/users" ? "text-yellow-400" : "hover:text-yellow-400"}
-              >
-                Users
-              </Link>
-              <Link
-                to="/admin/orders"
-                className={location.pathname === "/admin/orders" ? "text-yellow-400" : "hover:text-yellow-400"}
-              >
-                Orders
-              </Link>
-              <Link
-                to="/admin/products"
-                className={location.pathname === "/admin/products" ? "text-yellow-400" : "hover:text-yellow-400"}
-              >
-                Products
-              </Link>
-              <Link
-                to="/admin/feedback"
-                className={location.pathname === "/admin/feedback" ? "text-yellow-400" : "hover:text-yellow-400"}
-              >
-                Feedbacks
-              </Link>
-            </nav>
+        {/* Navigation */}
+        <div className="flex flex-col gap-2">
+          {/* Mobile Navigation */}
+          <div className="lg:hidden">
+            <div className="flex flex-wrap gap-2 mb-4">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      isActive(item.path)
+                        ? "bg-amber-600 text-white"
+                        : "bg-stone-800 text-amber-100 hover:bg-stone-700"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
             <button
               onClick={handleLogout}
-              className="ml-auto bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm"
+              className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all border border-red-600"
             >
+              <LogOut className="w-4 h-4" />
               Logout
             </button>
           </div>
 
-          {/* Large screen vertical layout */}
-          <nav className="hidden lg:flex flex-col gap-3 text-lg">
-            <Link
-              to="/admin"
-              className={location.pathname === "/admin" ? "text-yellow-400" : "hover:text-yellow-400"}
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/admin/users"
-              className={location.pathname === "/admin/users" ? "text-yellow-400" : "hover:text-yellow-400"}
-            >
-              Users
-            </Link>
-            <Link
-              to="/admin/orders"
-              className={location.pathname === "/admin/orders" ? "text-yellow-400" : "hover:text-yellow-400"}
-            >
-              Orders
-            </Link>
-            <Link
-              to="/admin/products"
-              className={location.pathname === "/admin/products" ? "text-yellow-400" : "hover:text-yellow-400"}
-            >
-              Products
-            </Link>
-            <Link
-                to="/admin/feedback"
-                className={location.pathname === "/admin/feedback" ? "text-yellow-400" : "hover:text-yellow-400"}
-              >
-                Feedbacks
-              </Link>
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex flex-col gap-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
+                    isActive(item.path)
+                      ? "bg-amber-600 text-white shadow-lg"
+                      : "text-amber-100 hover:bg-stone-800 hover:text-white"
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
             <button
               onClick={handleLogout}
-              className="mt-6 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm"
+              className="mt-4 flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-amber-100 hover:bg-red-600 hover:text-white transition-all border border-stone-700 hover:border-red-600"
             >
-              Logout
+              <LogOut className="w-5 h-5" />
+              <span>Logout</span>
             </button>
           </nav>
+        </div>
+
+        {/* Footer */}
+        <div className="hidden lg:block absolute bottom-6 left-6 right-6">
+          <div className="text-center">
+            <p className="text-xs text-amber-200/50 font-light tracking-wide">
+              BE MEN ADMIN
+            </p>
+          </div>
         </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 p-6 overflow-y-auto lg:h-screen">
-        <Outlet />
+        <div className="bg-white rounded-xl border border-stone-200 min-h-full">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

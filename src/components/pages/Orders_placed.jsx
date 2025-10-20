@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { CheckCircle, Package, Truck, Home, ArrowRight, Crown } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { fetchCart } from "../redux/slice/cartSlice";
 
 function OrderSuccess() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
+
   const { order, orderSummary } = location.state || {};
   const summary = orderSummary || order;
   const [countdown, setCountdown] = useState(10);
@@ -31,6 +35,10 @@ function OrderSuccess() {
 
     return () => clearInterval(timer);
   }, [navigate]);
+
+    useEffect(() => {
+    dispatch(fetchCart());
+  }, [dispatch]);
 
   return (
     <div className="min-h-screen bg-amber-50 py-8 px-4">

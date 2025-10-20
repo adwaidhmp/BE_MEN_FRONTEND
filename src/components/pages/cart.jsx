@@ -81,7 +81,7 @@ function Cart() {
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      
+
                       {/* Category Badge */}
                       <div className="absolute top-3 left-3">
                         <span className="px-2 py-1 bg-white/90 backdrop-blur-sm text-xs text-stone-600 rounded-full font-medium">
@@ -116,16 +116,15 @@ function Cart() {
                               }
                             }}
                             disabled={item.quantity === 1} // optional: disable at 1
-                            className={`w-8 h-8 rounded-full border flex items-center justify-center ${
-                              item.quantity === 1 ? "text-stone-300 cursor-not-allowed" : "hover:bg-stone-100"
-                            }`}
+                            className={`w-8 h-8 rounded-full border flex items-center justify-center ${item.quantity === 1 ? "text-stone-300 cursor-not-allowed" : "hover:bg-stone-100"
+                              }`}
                           >
                             <Minus className="w-3 h-3" />
                           </button>
                           <span className="text-sm font-medium text-stone-900 min-w-8 text-center">
                             {item.quantity}
                           </span>
-                          
+
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -149,25 +148,35 @@ function Cart() {
                             <Trash2 className="w-4 h-4" />
                           </button>
 
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate("/checkout", {
-                                state: {
-                                  items: [
-                                    {
-                                      product,
-                                      quantity: 1,
-                                      price: product.price,
-                                    },
-                                  ],
-                                },
-                              });
-                            }}
-                            className="px-4 py-2 bg-stone-900 text-amber-50 rounded-lg text-sm font-medium hover:bg-stone-800 transition-all"
-                          >
-                            Buy Now
-                          </button>
+                          {product.product_stock === 0 ? (
+                            <button
+                              disabled
+                              className="px-4 py-2 bg-gray-300 text-gray-600 rounded-lg text-sm font-medium cursor-not-allowed"
+                            >
+                              Out of Stock
+                            </button>
+                          ) : (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate("/checkout", {
+                                  state: {
+                                    items: [
+                                      {
+                                        product,
+                                        quantity: item.quantity,
+                                        price: product.price,
+                                      },
+                                    ],
+                                  },
+                                });
+                              }}
+                              className="px-4 py-2 bg-stone-900 text-amber-50 rounded-lg text-sm font-medium hover:bg-stone-800 transition-all"
+                            >
+                              Buy Now
+                            </button>
+                          )}
+
                         </div>
                       </div>
                     </div>
@@ -228,7 +237,7 @@ function Cart() {
                 >
                   Buy All Pieces
                 </button>
-                
+
                 <button
                   onClick={() => dispatch(clearCart())}
                   className="w-full flex items-center justify-center gap-2 py-3 text-stone-600 hover:text-red-600 transition-colors border border-stone-300 rounded-lg hover:border-red-300"

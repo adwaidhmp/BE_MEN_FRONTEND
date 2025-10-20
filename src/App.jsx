@@ -25,8 +25,6 @@ import CheckoutPage from './components/pages/Checkout';
 import OrderSuccess from './components/pages/Orders_placed';
 import OrdersPage from './components/pages/Order';
 import OrderDetailPage from './components/pages/order_Details';
-
-// 🟢 IMPORT THESE TWO:
 import { fetchCart } from "./components/redux/slice/cartSlice";
 import { fetchWishlist } from "./components/redux/slice/wishlistSlice";
 

@@ -9,6 +9,7 @@ import {
   removeFromWishlist,
   fetchWishlist,
 } from "../redux/slice/wishlistSlice";
+
 import { addToCart, fetchCart } from "../redux/slice/cartSlice";
 import { selectUser } from "../redux/slice/authSlice";
 
@@ -20,16 +21,17 @@ function ProductDetails() {
   const user = useSelector(selectUser);
   const wishlist = useSelector((state) => state.wishlist.wishlist);
   const cart = useSelector((state) => state.cart.cart);
+  const [buyNowQuantity, setBuyNowQuantity] = useState(1);
 
   const [product, setProduct] = useState(null);
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [activeImage] = useState(0);
 
-  // ✅ Fetch product + cart + wishlist
+  // Fetch product + cart + wishlist
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const res = await fetch(`http://localhost:8000/api/v1/products/${id}/`);
+        const res = await fetch(`http://localhost:8000/api/v1/user/products/${id}/`);
         const data = await res.json();
 
         setProduct({
@@ -66,13 +68,13 @@ function ProductDetails() {
     );
   }
 
-  // ✅ Works for both array of IDs or array of product objects
+  // Works for both array of IDs or array of product objects
   const isInWishlist = wishlist.some(
     (item) => item.product?.id === product.id || item.id === product.id
   );
   const isInCart = cart.some((item) => item.product.id === product.id);
 
-  // ✅ Toggle wishlist
+  // Toggle wishlist
   const handleWishlist = () => {
     if (!user) {
       toast.error("Please login to manage wishlist");
@@ -93,7 +95,7 @@ function ProductDetails() {
     }
   };
 
-  // ✅ Add to cart
+  // Add to cart
   const handleAddToCart = () => {
     if (!user) {
       toast.error("Please login to add to cart");
@@ -214,7 +216,7 @@ function ProductDetails() {
                 {product.name}
               </h1>
 
-              {/* Rating */}
+              {/* Rating
               {product.rating && (
                 <div className="flex items-center gap-2 mb-6">
                   <div className="flex">
@@ -233,7 +235,7 @@ function ProductDetails() {
                   </div>
                   <span className="text-sm text-stone-500">({product.rating})</span>
                 </div>
-              )}
+              )} */}
 
               {/* Price */}
               <div className="mb-8">
@@ -279,6 +281,33 @@ function ProductDetails() {
                   <span className="text-sm">Lifetime Service</span>
                 </div>
               </div>
+              <div className="flex items-center gap-4 mb-4">
+                  <span className="font-medium text-stone-700">Quantity:</span>
+                  <div className="flex items-center border rounded-lg overflow-hidden">
+                    {/* Decrease quantity */}
+                    <button
+                      onClick={() => setBuyNowQuantity(prev => Math.max(1, prev - 1))}
+                      className="px-3 py-1 bg-stone-100 hover:bg-stone-200"
+                    >
+                      -
+                    </button>
+
+                    <span className="px-4 py-1">{buyNowQuantity}</span>
+
+                    {/* Increase quantity (max 3) */}
+                    <button
+                      onClick={() =>
+                        setBuyNowQuantity(prev => Math.min(prev + 1, 3))
+                      }
+                      disabled={buyNowQuantity >= 3}
+                      className={`px-3 py-1 bg-stone-100 hover:bg-stone-200 ${
+                        buyNowQuantity >= 3 ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
@@ -312,7 +341,7 @@ function ProductDetails() {
                         items: [
                           {
                             product,
-                            quantity: 1,
+                            quantity: buyNowQuantity,
                             price: product.price,
                           },
                         ],

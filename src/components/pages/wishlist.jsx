@@ -82,7 +82,7 @@ function Wishlist() {
               {wishlist.length} curated piece{wishlist.length !== 1 ? 's' : ''} you adore
             </p>
           </div>
-          
+
           <button
             onClick={handleClearWishlist}
             className="flex items-center gap-2 px-4 py-2 text-stone-600 hover:text-red-600 transition-colors border border-stone-300 rounded-lg hover:border-red-300"
@@ -96,6 +96,7 @@ function Wishlist() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {wishlist.map((item) => {
             const product = item.product;
+            console.log('Rendering product:', product);
             const isInCart = cart.some((c) => c.product.id === product.id);
 
             return (
@@ -111,7 +112,7 @@ function Wishlist() {
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  
+
                   {/* Remove from Wishlist Button */}
                   <button
                     onClick={(e) => {
@@ -174,26 +175,36 @@ function Wishlist() {
                       </button>
                     )}
 
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate("/checkout", {
-                          state: {
-                            items: [
-                              {
-                                product,
-                                quantity: 1,
-                                price: product.price,
-                              },
-                            ],
-                          },
-                        });
-                      }}
-                      className="flex-1 flex items-center justify-center gap-2 bg-stone-900 text-amber-50 py-2.5 rounded-lg font-medium hover:bg-stone-800 transition-all text-sm"
-                    >
-                      <Zap className="w-4 h-4" />
-                      Buy Now
-                    </button>
+                    {product.product_stock === 0 ? (
+                      <button
+                        disabled
+                        className="flex-1 flex items-center justify-center gap-2 bg-gray-300 text-gray-600 py-2.5 rounded-lg font-medium cursor-not-allowed text-sm"
+                      >
+                        <Zap className="w-4 h-4" />
+                        Out of Stock
+                      </button>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate("/checkout", {
+                            state: {
+                              items: [
+                                {
+                                  product,
+                                  quantity: 1,
+                                  price: product.price,
+                                },
+                              ],
+                            },
+                          });
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 bg-stone-900 text-amber-50 py-2.5 rounded-lg font-medium hover:bg-stone-800 transition-all text-sm"
+                      >
+                        <Zap className="w-4 h-4" />
+                        Buy Now
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

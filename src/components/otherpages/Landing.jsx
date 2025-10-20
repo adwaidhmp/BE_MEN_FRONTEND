@@ -1,33 +1,15 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Crown } from "lucide-react";
 import Footer from "./footer";
+import Navbar from "./navbar";
 
 export default function Landing() {
   return (
     <div className="min-h-screen bg-amber-50 text-stone-900 font-sans">
       {/* Header */}
       <div className="fixed top-0 left-0 w-full z-50 bg-stone-900/95 backdrop-blur-sm border-b border-stone-700">
-        <div className="w-full px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center">
-              <Crown className="w-4 h-4 text-white" />
-            </div>
-            <div className="text-left">
-              <div className="font-serif text-xl text-amber-50 tracking-wide">BE MEN</div>
-              <div className="text-xs text-amber-200/70 tracking-widest font-light">COLLECTION</div>
-            </div>
-          </div>
-
-          <Link
-            to="/login"
-            className="bg-amber-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-amber-700 transition-all border border-amber-600 hover:border-amber-700"
-          >
-            Enter
-          </Link>
-        </div>
-        <div className="h-0.5 bg-gradient-to-r from-amber-600/50 via-amber-400/30 to-amber-600/50"></div>
+        <Navbar/>
       </div>
-
       {/* Hero Section */}
       <div className="relative min-h-screen flex items-center justify-center bg-stone-900 overflow-hidden">
         {/* Vintage Texture Overlay */}

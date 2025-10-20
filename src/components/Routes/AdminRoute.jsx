@@ -1,15 +1,23 @@
-import { Navigate } from "react-router-dom";
-import { useAuth } from "../contexts/Authcontext";
+import { Navigate, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import NoAccess from "../no access";
 
-export default function AdminRoute({ children }) {
-  const { user } = useAuth();
-  
-  if (!user) return <Navigate to="/login" />;
-    if (user.role !== "admin") {
+const AdminRoute = ({ children }) => {
+  const user = useSelector((state) => state.auth.user);
+  const location = useLocation();
+
+  if (!user) {
+    // Not logged in → redirect to login
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (!user.is_staff) {
+    // Logged in but not admin → show NoAccess
     return <NoAccess />;
   }
-  
-  return children;
-}
 
+  // Admin → allow access
+  return children;
+};
+
+export default AdminRoute;

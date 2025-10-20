@@ -1,4 +1,4 @@
-import { useEffect, } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchOrderDetail, cancelOrder } from "../redux/slice/orderSlice";
@@ -12,19 +12,26 @@ function OrderDetailPage() {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { currentOrder: order, loading,  } = useSelector((state) => state.order);
+  const { currentOrder: order, loading } = useSelector((state) => state.order);
+
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
 
   useEffect(() => {
     dispatch(fetchOrderDetail(orderId));
   }, [dispatch, orderId]);
 
   const handleCancelOrder = async () => {
-    if (!window.confirm("Are you sure you want to cancel this order?")) return;
-    
+    if (!cancelReason.trim()) {
+      toast.error("Please provide a reason for cancellation");
+      return;
+    }
+
     try {
       const resultAction = await dispatch(cancelOrder(order.id));
       if (cancelOrder.fulfilled.match(resultAction)) {
         toast.success("Order cancelled successfully");
+        setShowCancelModal(false);
       } else {
         toast.error(resultAction.payload || "Failed to cancel order");
       }
@@ -59,7 +66,7 @@ function OrderDetailPage() {
   const canCancelOrder = (status) => {
     return status === "PENDING" || status === "PROCESSING";
   };
-{console.log(order)}
+
   if (loading) {
     return (
       <div className="min-h-screen bg-amber-50 flex items-center justify-center">
@@ -88,10 +95,9 @@ function OrderDetailPage() {
       </div>
     );
   }
-  
+
   return (
-    
-    <div className="min-h-screen bg-amber-50 pt-24 pb-12">
+    <div className="min-h-screen bg-amber-50 pt-24 pb-12 relative">
       <div className="w-full px-4 max-w-5xl mx-auto">
         {/* Back Button */}
         <button
@@ -234,7 +240,7 @@ function OrderDetailPage() {
                 <h2 className="font-serif text-xl text-stone-900 mb-4">Order Actions</h2>
                 <div className="flex gap-3">
                   <button
-                    onClick={handleCancelOrder}
+                    onClick={() => setShowCancelModal(true)}
                     className="px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-all flex items-center gap-2 border border-red-600"
                   >
                     <XCircle className="w-5 h-5" />
@@ -274,9 +280,8 @@ function OrderDetailPage() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-stone-600 font-light">Payment Method</span>
                     <span className="font-medium text-stone-900 flex items-center gap-2">
+                      {order.payment_method}
                       <CreditCard className="w-4 h-4 text-stone-400" />
-                      {order.payment_method }
-                      {console.log(order.payment_method)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
@@ -320,6 +325,36 @@ function OrderDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Cancel Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h2 className="text-xl font-serif text-stone-900 mb-4">Cancel Order #{order.id}</h2>
+            <textarea
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              placeholder="Enter reason for cancellation"
+              className="w-full border border-stone-300 rounded-lg p-3 mb-4 text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              rows={4}
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="px-4 py-2 bg-stone-200 text-stone-700 rounded-lg font-medium hover:bg-stone-300 transition-all border border-stone-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCancelOrder}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-all border border-red-600"
+              >
+                Confirm Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

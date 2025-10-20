@@ -2,19 +2,25 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const ProtectedRoute = ({ children }) => {
-  const user = useSelector((state) => state.auth.user); // get user from Redux
+  const user = useSelector((state) => state.auth.user);
   const location = useLocation();
 
   if (!user) {
-    // Redirect to login if not logged in and preserve current location
+    // Not logged in → redirect to login
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  if (user.is_banned) {
+    // Banned user → redirect to banned page or login with message
+    return <Navigate to="/no-access" replace />;
+  }
+
   if (user.is_staff) {
-    // Redirect admins to /admin
+    // Admin trying to access normal user route → redirect to /admin
     return <Navigate to="/admin" replace />;
   }
 
+  // Normal user → allow access
   return children;
 };
 
