@@ -3,9 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchOrderDetail, cancelOrder } from "../redux/slice/orderSlice";
 import { toast } from "react-toastify";
-import { 
-  Package, Truck, CheckCircle, XCircle, Clock, MapPin, Phone, 
-  Calendar, DollarSign, ArrowLeft, AlertCircle, Hash, CreditCard, Crown 
+import {
+  Package, Truck, CheckCircle, XCircle, Clock, MapPin, Phone,
+  Calendar, DollarSign, ArrowLeft, AlertCircle, Hash, CreditCard, Crown
 } from "lucide-react";
 
 function OrderDetailPage() {
@@ -148,9 +148,9 @@ function OrderDetailPage() {
                 <Package className="w-5 h-5 text-amber-600" />
                 Product Details
               </h2>
-              
-              <div className="flex gap-4 cursor-pointer" 
-              onClick={() => navigate(`/product/${order.product.id}`)}>
+
+              <div className="flex gap-4 cursor-pointer"
+                onClick={() => navigate(`/product/${order.product.id}`)}>
                 <div className="w-24 h-24 bg-stone-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-stone-200">
                   {order.product?.image ? (
                     <img
@@ -162,7 +162,7 @@ function OrderDetailPage() {
                     <Package className="w-12 h-12 text-stone-400" />
                   )}
                 </div>
-                
+
                 <div className="flex-1">
                   <h3 className="font-serif text-lg text-stone-900 mb-2">
                     {order.product?.name || "Product"}
@@ -170,7 +170,7 @@ function OrderDetailPage() {
                   {order.product?.description && (
                     <p className="text-stone-600 text-sm mb-3 font-light">{order.product.description}</p>
                   )}
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-stone-500 font-light">Price per unit</p>
@@ -191,13 +191,13 @@ function OrderDetailPage() {
                 <MapPin className="w-5 h-5 text-amber-600" />
                 Shipping Information
               </h2>
-              
+
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-stone-500 mb-1 font-light">Delivery Address</p>
                   <p className="text-stone-900 font-medium">{order.shipping_address}</p>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-stone-500 mb-1 font-light">Contact Number</p>
@@ -206,7 +206,7 @@ function OrderDetailPage() {
                       {order.phone}
                     </p>
                   </div>
-                  
+
                   {order.tracking_id && (
                     <div>
                       <p className="text-sm text-stone-500 mb-1 font-light">Tracking ID</p>
@@ -258,7 +258,7 @@ function OrderDetailPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl border border-stone-200 p-6 sticky top-4">
               <h2 className="font-serif text-xl text-stone-900 mb-4">Order Summary</h2>
-              
+
               <div className="space-y-4">
                 <div className="flex justify-between text-stone-600">
                   <span>Subtotal</span>
@@ -286,13 +286,12 @@ function OrderDetailPage() {
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-stone-600 font-light">Payment Status</span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      order.payment_status === 'PAID' 
-                        ? 'bg-green-100 text-green-700 border border-green-200' 
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${order.payment_status === 'PAID'
+                        ? 'bg-green-100 text-green-700 border border-green-200'
                         : order.payment_status === 'REFUNDED'
-                        ? 'bg-orange-100 text-orange-700 border border-orange-200'
-                        : 'bg-amber-100 text-amber-700 border border-amber-200'
-                    }`}>
+                          ? 'bg-orange-100 text-orange-700 border border-orange-200'
+                          : 'bg-amber-100 text-amber-700 border border-amber-200'
+                      }`}>
                       {order.payment_status}
                     </span>
                   </div>
@@ -303,24 +302,38 @@ function OrderDetailPage() {
               <div className="mt-6 pt-6 border-t border-stone-200">
                 <h3 className="font-medium text-stone-900 mb-4">Order Status</h3>
                 <div className="space-y-3">
-                  <div className={`flex items-center gap-3 ${['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED'].includes(order.order_status) ? 'text-green-600' : 'text-stone-400'}`}>
+                  {/* Order Placed */}
+                  <div className={`flex items-center gap-3 ${['PENDING', 'PROCESSING', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(order.order_status) ? 'text-green-600' : 'text-stone-400'}`}>
                     <CheckCircle className="w-5 h-5" />
                     <span className="text-sm font-medium">Order Placed</span>
                   </div>
-                  <div className={`flex items-center gap-3 ${['PROCESSING', 'SHIPPED', 'DELIVERED'].includes(order.order_status) ? 'text-green-600' : 'text-stone-400'}`}>
+
+                  {/* Processing */}
+                  <div className={`flex items-center gap-3 ${['PROCESSING', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(order.order_status) ? 'text-green-600' : 'text-stone-400'}`}>
                     <CheckCircle className="w-5 h-5" />
                     <span className="text-sm font-medium">Processing</span>
                   </div>
-                  <div className={`flex items-center gap-3 ${['SHIPPED', 'DELIVERED'].includes(order.order_status) ? 'text-green-600' : 'text-stone-400'}`}>
+
+                  {/* Shipped */}
+                  <div className={`flex items-center gap-3 ${['SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(order.order_status) ? 'text-green-600' : 'text-stone-400'}`}>
                     <Truck className="w-5 h-5" />
                     <span className="text-sm font-medium">Shipped</span>
                   </div>
+
+                  {/* Out for Delivery */}
+                  <div className={`flex items-center gap-3 ${['OUT_FOR_DELIVERY', 'DELIVERED'].includes(order.order_status) ? 'text-green-600' : 'text-stone-400'}`}>
+                    <Truck className="w-5 h-5" />
+                    <span className="text-sm font-medium">Out for Delivery</span>
+                  </div>
+
+                  {/* Delivered */}
                   <div className={`flex items-center gap-3 ${order.order_status === 'DELIVERED' ? 'text-green-600' : 'text-stone-400'}`}>
                     <CheckCircle className="w-5 h-5" />
                     <span className="text-sm font-medium">Delivered</span>
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
         </div>

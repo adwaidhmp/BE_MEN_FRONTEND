@@ -12,7 +12,6 @@ export default function AdminLayout() {
   const handleLogout = async () => {
     try {
       await dispatch(logoutUser()).unwrap();
-      toast.success("Logged out successfully");
     } catch (err) {
       toast.error("Failed to logout");
       console.error(err);
