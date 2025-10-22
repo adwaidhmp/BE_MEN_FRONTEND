@@ -24,9 +24,11 @@ import ResetPassword from './components/user/resetpass';
 import CheckoutPage from './components/pages/Checkout';
 import OrderSuccess from './components/pages/Orders_placed';
 import OrdersPage from './components/pages/Order';
-import OrderDetailPage from './components/pages/order_Details';
+import OrderDetailPage from './components/pages/order_Details'
 import { fetchCart } from "./components/redux/slice/cartSlice";
 import { fetchWishlist } from "./components/redux/slice/wishlistSlice";
+import NotificationComponent from './components/user/notification';
+import { fetchNotifications } from './components/redux/slice/NotificationSlice';
 
 const Homepage = lazy(() => import('./components/pages/homepage'));
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
@@ -34,18 +36,18 @@ const Dashboard = lazy(() => import('./components/admin/Dashboard'));
 const Users = lazy(() => import('./components/admin/Admuser'));
 const AdmOrders = lazy(() => import('./components/admin/Admorders'));
 const Products = lazy(() => import('./components/admin/Admproducts'));
-const Feedback = lazy(() => import('./components/admin/Feedback'));
+import CancelledOrdersPage from './components/admin/CancelledOrder';
 
 function App() {
   const location = useLocation();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
-  // 🟡 FIX: refetch wishlist & cart after login or page refresh
   useEffect(() => {
     if (user) {
       dispatch(fetchCart());
       dispatch(fetchWishlist());
+      dispatch(fetchNotifications())
     }
   }, [user, dispatch]);
 
@@ -85,7 +87,7 @@ function App() {
           <Route path="users" element={<Suspense fallback={<Loader />}><Users /></Suspense>} />
           <Route path="orders" element={<Suspense fallback={<Loader />}><AdmOrders /></Suspense>} />
           <Route path="products" element={<Suspense fallback={<Loader />}><Products /></Suspense>} />
-          <Route path="feedback" element={<Suspense fallback={<Loader />}><Feedback /></Suspense>} />
+          <Route path="feedback" element={<Suspense fallback={<Loader />}><CancelledOrdersPage /></Suspense>} />
         </Route>
 
         {/* USER ROUTES */}
@@ -97,6 +99,7 @@ function App() {
 
         <Route path="/home" element={<Suspense fallback={<Loader />}><Homepage /></Suspense>} />
         <Route path="/product/:id" element={<ProductDetails />} />
+        <Route path="/notifications" element={<ProtectedRoute><NotificationComponent /></ProtectedRoute>} />
         <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
         <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
         <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />

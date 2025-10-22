@@ -3,6 +3,7 @@ import api from "../../api";
 import { toast } from "react-toastify";
 import { fetchCart,resetCart } from "./cartSlice";         
 import { fetchWishlist,resetWishlist } from "./wishlistSlice"; 
+import { fetchNotifications } from "./NotificationSlice";
 
 
 //  LOGIN
@@ -19,7 +20,6 @@ export const loginUser = createAsyncThunk(
       await dispatch(fetchWishlist());
 
       toast.success("Login successful!");
-      // navigate(user?.is_staff ? "/admin" : "/home", { replace: true });
       console.log(user)
       return user;
     } catch (err) {
@@ -40,6 +40,7 @@ export const logoutUser = createAsyncThunk(
       dispatch(setUser(null));
       dispatch(resetCart());
       dispatch(resetWishlist());
+      dispatch(fetchNotifications())
 
       sessionStorage.removeItem("user");
 

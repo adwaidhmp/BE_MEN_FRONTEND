@@ -2,16 +2,20 @@ import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import Profile from "../user/profile";
-import { Heart, ShoppingCart, User, ShoppingBag, Info, Crown } from "lucide-react";
+import { Heart, ShoppingCart, User, ShoppingBag, Info, Crown, Bell } from "lucide-react";
+import { selectNotifications } from "../redux/slice/NotificationSlice";
 
 function Navbar() {
   const location = useLocation();
   const { user } = useSelector((state) => state.auth);
   const { wishlist } = useSelector((state) => state.wishlist);
-  const { cart } = useSelector((state) => state.cart);
+  const { cart } = useSelector((state) => state.cart);const notifications = useSelector(selectNotifications);
 
   const [showProfile, setShowProfile] = useState(false);
   const profileRef = useRef(null);
+
+  // Calculate unread notifications count
+const unreadCount = notifications?.filter(n => !n.read)?.length || 0;
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -60,6 +64,21 @@ function Navbar() {
                   <span className="hidden sm:inline font-medium text-sm">Collection</span>
                 </Link>
               )}
+
+              {/* Notifications */}
+              <Link
+                to="/notifications"
+                className="flex items-center gap-2 hover:text-amber-200 transition-colors group relative"
+              >
+                <div className="p-2 rounded-lg group-hover:bg-stone-800/50 transition-colors relative">
+                  <Bell className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  {user && unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 text-xs w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center animate-pulse">
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
+              </Link>
 
               {/* Wishlist */}
               <Link

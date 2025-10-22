@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchOrderDetail, cancelOrder } from "../redux/slice/orderSlice";
+import { fetchOrderDetail, cancelOrder, updateOrderAddress } from "../redux/slice/orderSlice";
 import { toast } from "react-toastify";
 import {
   Package, Truck, CheckCircle, XCircle, Clock, MapPin, Phone,
-  Calendar, DollarSign, ArrowLeft, AlertCircle, Hash, CreditCard, Crown
+  Calendar, DollarSign, ArrowLeft, AlertCircle, Hash, CreditCard, Crown,
+  Edit, Save, X
 } from "lucide-react";
 
 function OrderDetailPage() {
@@ -16,28 +17,72 @@ function OrderDetailPage() {
 
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [editedAddress, setEditedAddress] = useState("");
 
   useEffect(() => {
     dispatch(fetchOrderDetail(orderId));
   }, [dispatch, orderId]);
 
-  const handleCancelOrder = async () => {
-    if (!cancelReason.trim()) {
-      toast.error("Please provide a reason for cancellation");
+  // Initialize edited address when order loads
+  useEffect(() => {
+    if (order?.shipping_address) {
+      setEditedAddress(order.shipping_address);
+    }
+  }, [order?.shipping_address]);
+
+const handleCancelOrder = async () => {
+  if (!cancelReason.trim()) {
+    toast.error("Please provide a reason for cancellation");
+    return;
+  }
+
+  if (!order?.id) {
+    toast.error("Order ID is not available");
+    return;
+  }
+
+  try {
+    const resultAction = await dispatch(cancelOrder({ 
+      orderId: order.id, 
+      reason: cancelReason 
+    }));
+
+    if (cancelOrder.fulfilled.match(resultAction)) {
+      toast.success("Order cancelled successfully");
+      setShowCancelModal(false);
+    } else {
+      toast.error(resultAction.payload || "Failed to cancel order");
+    }
+  } catch (err) {
+    console.log(err);
+    toast.error("Failed to cancel order");
+  }
+};
+
+  const handleUpdateAddress = async () => {
+    if (!editedAddress.trim()) {
+      toast.error("Please enter a valid shipping address");
       return;
     }
 
     try {
-      const resultAction = await dispatch(cancelOrder(order.id));
-      if (cancelOrder.fulfilled.match(resultAction)) {
-        toast.success("Order cancelled successfully");
-        setShowCancelModal(false);
+      const resultAction = await dispatch(updateOrderAddress({
+        orderId: order.id,
+        shippingAddress: editedAddress
+      }));
+      
+      if (updateOrderAddress.fulfilled.match(resultAction)) {
+        toast.success("Shipping address updated successfully");
+        setIsEditingAddress(false);
+        // Refresh order details to get updated data
+        dispatch(fetchOrderDetail(orderId));
       } else {
-        toast.error(resultAction.payload || "Failed to cancel order");
+        toast.error(resultAction.payload || "Failed to update address");
       }
     } catch (err) {
       console.log(err);
-      toast.error("Failed to cancel order");
+      toast.error("Failed to update address");
     }
   };
 
@@ -64,6 +109,11 @@ function OrderDetailPage() {
   };
 
   const canCancelOrder = (status) => {
+    return status === "PENDING" || status === "PROCESSING";
+  };
+
+  const canEditAddress = (status) => {
+    // Allow address editing only for pending and processing orders
     return status === "PENDING" || status === "PROCESSING";
   };
 
@@ -152,7 +202,7 @@ function OrderDetailPage() {
               <div className="flex gap-4 cursor-pointer"
                 onClick={() => navigate(`/product/${order.product.id}`)}>
                 <div className="w-24 h-24 bg-stone-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-stone-200">
-                  {order.product?.image ? (
+                  {order.product?.product_image ? (
                     <img
                       src={`http://127.0.0.1:8000${order.product.product_image}`}
                       alt={order.product?.name || "Product"}
@@ -162,7 +212,6 @@ function OrderDetailPage() {
                     <Package className="w-12 h-12 text-stone-400" />
                   )}
                 </div>
-
                 <div className="flex-1">
                   <h3 className="font-serif text-lg text-stone-900 mb-2">
                     {order.product?.name || "Product"}
@@ -187,15 +236,58 @@ function OrderDetailPage() {
 
             {/* Shipping Information */}
             <div className="bg-white rounded-xl border border-stone-200 p-6">
-              <h2 className="font-serif text-xl text-stone-900 mb-4 flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-amber-600" />
-                Shipping Information
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-serif text-xl text-stone-900 flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-amber-600" />
+                  Shipping Information
+                </h2>
+                {canEditAddress(order.order_status) && (
+                  !isEditingAddress ? (
+                    <button
+                      onClick={() => setIsEditingAddress(true)}
+                      className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Edit Address
+                    </button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleUpdateAddress}
+                        className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        <Save className="w-4 h-4" />
+                        Save
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsEditingAddress(false);
+                          setEditedAddress(order.shipping_address);
+                        }}
+                        className="flex items-center gap-2 px-3 py-2 bg-stone-200 text-stone-700 rounded-lg hover:bg-stone-300 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                        Cancel
+                      </button>
+                    </div>
+                  )
+                )}
+              </div>
 
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-stone-500 mb-1 font-light">Delivery Address</p>
-                  <p className="text-stone-900 font-medium">{order.shipping_address}</p>
+                  {isEditingAddress ? (
+                    <textarea
+                      value={editedAddress}
+                      onChange={(e) => setEditedAddress(e.target.value)}
+                      className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none"
+                      rows={3}
+                      placeholder="Enter complete shipping address"
+                    />
+                  ) : (
+                    <p className="text-stone-900 font-medium">{order.shipping_address}</p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

@@ -106,17 +106,16 @@ function OrdersPage() {
                   <div className="flex items-center gap-4">
                     {/* Product Image */}
                     <div className="w-20 h-20 bg-stone-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-stone-200">
-                      {order.product?.image ? (
-                        <img
-                          src={`http://127.0.0.1:8000${order.product.product_image}`}
-                          alt={order.product?.name || "Product"}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Package className="w-8 h-8 text-stone-800" />
-                      )}
-                    </div>
-
+                        {order.product?.product_image ? (
+                          <img
+                            src={`http://127.0.0.1:8000${order.product.product_image}`}
+                            alt={order.product?.name || "Product"}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Package className="w-8 h-8 text-stone-800" />
+                        )}
+                      </div>
                     {/* Order Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-4 mb-2">

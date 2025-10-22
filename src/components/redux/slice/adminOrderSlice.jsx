@@ -4,13 +4,11 @@ import adminapi from "../../adminapi";
 
 // -----------------------------------------------------
 // Fetch all orders (Admin)
-// -----------------------------------------------------
 export const fetchAdminOrders = createAsyncThunk(
   "adminOrders/fetchAll",
-  async (params={}, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue }) => {
     try {
-      const res = await adminapi.get("orders/",{params});
-      console.log("res.data.results :",res.data.results)
+      const res = await adminapi.get("orders/", { params });
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || "Failed to fetch orders");
@@ -19,8 +17,22 @@ export const fetchAdminOrders = createAsyncThunk(
 );
 
 // -----------------------------------------------------
-//  Fetch single order by ID
+// Fetch cancelled orders (Admin)
+export const fetchCancelledOrders = createAsyncThunk(
+  "adminOrders/fetchCancelled",
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const res = await adminapi.get("cancelled-orders/", { params });
+      console.log("res.data",res.data)
+      return res.data; // array of cancelled orders
+    } catch (err) {
+      return rejectWithValue(err.response?.data || "Failed to fetch cancelled orders");
+    }
+  }
+);
+
 // -----------------------------------------------------
+// Fetch single order by ID
 export const fetchAdminOrderDetail = createAsyncThunk(
   "adminOrders/fetchDetail",
   async (orderId, { rejectWithValue }) => {
@@ -34,11 +46,10 @@ export const fetchAdminOrderDetail = createAsyncThunk(
 );
 
 // -----------------------------------------------------
-//  Update order (status, tracking_id, delivery_date)
-// -----------------------------------------------------
+// Update order (status, tracking_id, delivery_date)
 export const updateAdminOrder = createAsyncThunk(
   "adminOrders/update",
-  async ({ orderId, updateData }, {getState,dispatch, rejectWithValue }) => {
+  async ({ orderId, updateData }, { getState, dispatch, rejectWithValue }) => {
     try {
       const res = await adminapi.patch(`orders/${orderId}/`, updateData);
       toast.success("Order updated successfully!");
@@ -58,22 +69,19 @@ export const updateAdminOrder = createAsyncThunk(
 
 // -----------------------------------------------------
 // Slice
-// -----------------------------------------------------
 const adminOrderSlice = createSlice({
   name: "adminOrders",
   initialState: {
     loading: false,
     error: null,
-    data: [],
+    data: [],             // All orders
+    cancelled: [],        // Cancelled orders
     selectedOrder: null,
   },
   reducers: {
-    clearAdminOrderError: (state) => {
-      state.error = null;
-    },
-    clearSelectedOrder: (state) => {
-      state.selectedOrder = null;
-    },
+    clearAdminOrderError: (state) => { state.error = null; },
+    clearSelectedOrder: (state) => { state.selectedOrder = null; },
+    clearCancelledOrders: (state) => { state.cancelled = []; },
   },
   extraReducers: (builder) => {
     builder
@@ -87,6 +95,20 @@ const adminOrderSlice = createSlice({
         state.data = action.payload;
       })
       .addCase(fetchAdminOrders.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Fetch cancelled orders
+      .addCase(fetchCancelledOrders.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCancelledOrders.fulfilled, (state, action) => {
+        state.loading = false;
+        state.cancelled = action.payload;
+      })
+      .addCase(fetchCancelledOrders.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -114,19 +136,18 @@ const adminOrderSlice = createSlice({
         state.loading = false;
         const updated = action.payload;
 
-        // ✅ Update in paginated list safely
+        // Update in main orders list
         if (state.data?.results && Array.isArray(state.data.results)) {
           const idx = state.data.results.findIndex((order) => order.id === updated.id);
-          if (idx !== -1) {
-            state.data.results[idx] = { ...state.data.results[idx], ...updated };
-          }
+          if (idx !== -1) state.data.results[idx] = { ...state.data.results[idx], ...updated };
         }
 
-        // ✅ Update selected order if open
-        if (state.selectedOrder?.id === updated.id) {
-          state.selectedOrder = { ...state.selectedOrder, ...updated };
-        }
+        // Update in cancelled list if exists
+        const cancelIdx = state.cancelled.findIndex((o) => o.order_id === updated.id);
+        if (cancelIdx !== -1) state.cancelled[cancelIdx] = { ...state.cancelled[cancelIdx], ...updated };
 
+        // Update selected order if open
+        if (state.selectedOrder?.id === updated.id) state.selectedOrder = { ...state.selectedOrder, ...updated };
         state.error = null;
       })
       .addCase(updateAdminOrder.rejected, (state, action) => {
@@ -136,5 +157,5 @@ const adminOrderSlice = createSlice({
   },
 });
 
-export const { clearAdminOrderError, clearSelectedOrder } = adminOrderSlice.actions;
+export const { clearAdminOrderError, clearSelectedOrder, clearCancelledOrders } = adminOrderSlice.actions;
 export default adminOrderSlice.reducer;

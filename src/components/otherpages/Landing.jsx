@@ -6,10 +6,6 @@ import Navbar from "./navbar";
 export default function Landing() {
   return (
     <div className="min-h-screen bg-amber-50 text-stone-900 font-sans">
-      {/* Header */}
-      <div className="fixed top-0 left-0 w-full z-50 bg-stone-900/95 backdrop-blur-sm border-b border-stone-700">
-        <Navbar/>
-      </div>
       {/* Hero Section */}
       <div className="relative min-h-screen flex items-center justify-center bg-stone-900 overflow-hidden">
         {/* Vintage Texture Overlay */}

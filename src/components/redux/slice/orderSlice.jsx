@@ -62,20 +62,39 @@ export const placeOrder = createAsyncThunk(
 );
   
 
-
 // Cancel order
 export const cancelOrder = createAsyncThunk(
   "order/cancelOrder",
-  async (orderId, { rejectWithValue }) => {
+  async ({ orderId, reason }, { rejectWithValue }) => {
     try {
-      const res = await api.delete(`/my-orders/${orderId}/`);
-      return { orderId, ...res.data };
+      const res = await api.delete(`/my-orders/${orderId}/`, {
+        data: { cancellation_reason: reason }, // send reason to backend
+      });
+
+      // return orderId so the reducer can update state
+      return { orderId, ...res.data }; 
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.error || err.message);
+    }
+  }
+);
+
+
+
+// Update Order Address
+export const updateOrderAddress = createAsyncThunk(
+  "order/updateOrderAddress",
+  async ({ orderId, shippingAddress }, { rejectWithValue }) => {
+    try {
+      const res = await api.patch(`/orders/${orderId}/update-address/`, {
+        shipping_address: shippingAddress
+      });
+      return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
-
 
 const orderSlice = createSlice({
   name: "order",
@@ -182,6 +201,30 @@ const orderSlice = createSlice({
         }
       })
       .addCase(cancelOrder.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      //  updateOrderAddress
+      .addCase(updateOrderAddress.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateOrderAddress.fulfilled, (state, action) => {
+        state.loading = false;
+        
+        // Update currentOrder if it's the same order
+        if (state.currentOrder && state.currentOrder.id === action.payload.id) {
+          state.currentOrder = { ...state.currentOrder, ...action.payload };
+        }
+        
+        // Update in orders array if it exists
+        const index = state.orders.findIndex(o => o.id === action.payload.id);
+        if (index !== -1) {
+          state.orders[index] = { ...state.orders[index], ...action.payload };
+        }
+      })
+      .addCase(updateOrderAddress.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
