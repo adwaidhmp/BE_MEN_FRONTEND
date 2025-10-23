@@ -1,55 +1,46 @@
 import './App.css'
 import { Routes, Route, useLocation } from "react-router-dom"
-import { lazy, Suspense, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import Loader from './components/otherpages/Loader';
-import Navbar from './components/otherpages/navbar'
-import Aboutus from './components/otherpages/aboutus'
-import ProductDetails from './components/pages/ProductDetails'
-import Wishlist from './components/pages/wishlist';
-import Cart from './components/pages/cart';
-import Login from './components/user/login'
-import Profile from './components/user/profile'
-import Signup from './components/user/signup'
-import LoginRoute from './components/Routes/Loginroute'
-import ProtectedRoute from './components/Routes/protectedroutes'
-import Contact from './components/contact'
+import { lazy, Suspense, } from "react";
+
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import AdminRoute from './components/Routes/AdminRoute'
-import NotFound from './components/Notfound'
-import Landing from './components/otherpages/Landing'
-import ForgotPassword from './components/user/forgotpass';
-import ResetPassword from './components/user/resetpass';
-import CheckoutPage from './components/pages/Checkout';
-import OrderSuccess from './components/pages/Orders_placed';
-import OrdersPage from './components/pages/Order';
-import OrderDetailPage from './components/pages/order_Details'
-import { fetchCart } from "./components/redux/slice/cartSlice";
-import { fetchWishlist } from "./components/redux/slice/wishlistSlice";
-import NotificationComponent from './components/user/notification';
-import { fetchNotifications } from './components/redux/slice/NotificationSlice';
 
+import Loader from './components/otherpages/Loader';
+import Navbar from './components/otherpages/navbar'
+import Wishlist from './components/pages/wishlist';
+import Cart from './components/pages/cart';
+import Contact from './components/contact'
+import Landing from './components/otherpages/Landing'
+import NotificationComponent from './components/user/notification';
+
+import LoginRoute from './components/Routes/Loginroute'
+import ProtectedRoute from './components/Routes/protectedroutes'
+import AdminRoute from './components/Routes/AdminRoute'
+
+const Aboutus = lazy(() => import('./components/otherpages/aboutus'));
+const ProductDetails = lazy(() => import('./components/pages/ProductDetails'));
+const Login = lazy(() => import('./components/user/login'));
+const Profile = lazy(() => import('./components/user/profile'));
+const Signup = lazy(() => import('./components/user/signup'));
+const NotFound = lazy(() => import('./components/Notfound'));
+const ForgotPassword = lazy(() => import('./components/user/forgotpass'));
+const ResetPassword = lazy(() => import('./components/user/resetpass'));
+const CheckoutPage = lazy(() => import('./components/pages/Checkout'));
+const OrderSuccess = lazy(() => import('./components/pages/Orders_placed'));
+const OrdersPage = lazy(() => import('./components/pages/Order'));
+const OrderDetailPage = lazy(() => import('./components/pages/order_Details'));
 const Homepage = lazy(() => import('./components/pages/homepage'));
+
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
 const Dashboard = lazy(() => import('./components/admin/Dashboard'));
 const Users = lazy(() => import('./components/admin/Admuser'));
 const AdmOrders = lazy(() => import('./components/admin/Admorders'));
 const Products = lazy(() => import('./components/admin/Admproducts'));
-import CancelledOrdersPage from './components/admin/CancelledOrder';
+const CancelledOrdersPage = lazy(()=>import('./components/admin/CancelledOrder')) 
+
 
 function App() {
   const location = useLocation();
-  const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
-
-  useEffect(() => {
-    if (user) {
-      dispatch(fetchCart());
-      dispatch(fetchWishlist());
-      dispatch(fetchNotifications())
-    }
-  }, [user, dispatch]);
 
   const isAdminRoute =
     location.pathname.startsWith("/admin") ||
@@ -60,15 +51,22 @@ function App() {
   return (
     <>
       <ToastContainer
-        position="top-center"
-        autoClose={1000}
-        hideProgressBar={true}
-        closeOnClick
-        pauseOnHover
-        draggable
-        toastClassName="!bg-black !text-white font-medium rounded-full shadow-md p-3"
-        bodyClassName="text-white"
-      />
+          position="top-center"
+          autoClose={2000}
+          hideProgressBar={false}
+          newestOnTop={true}
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="dark"
+          toastClassName={() =>
+            "!bg-[#111] !text-white !rounded-xl !shadow-lg !border !border-amber-500/40 backdrop-blur-md p-4 flex items-center space-x-2 transition-all duration-300 hover:scale-[1.02]"
+          }
+          bodyClassName={() => "!text-sm tracking-wide font-medium"}
+          progressClassName="!bg-amber-500"
+          icon={false}
+        />
+
       {!isAdminRoute && <Navbar />}
 
       <Routes>
@@ -87,7 +85,7 @@ function App() {
           <Route path="users" element={<Suspense fallback={<Loader />}><Users /></Suspense>} />
           <Route path="orders" element={<Suspense fallback={<Loader />}><AdmOrders /></Suspense>} />
           <Route path="products" element={<Suspense fallback={<Loader />}><Products /></Suspense>} />
-          <Route path="feedback" element={<Suspense fallback={<Loader />}><CancelledOrdersPage /></Suspense>} />
+          <Route path="cancelled" element={<Suspense fallback={<Loader />}><CancelledOrdersPage /></Suspense>} />
         </Route>
 
         {/* USER ROUTES */}

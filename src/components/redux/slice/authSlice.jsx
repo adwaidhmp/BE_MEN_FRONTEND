@@ -18,7 +18,8 @@ export const loginUser = createAsyncThunk(
 
       await dispatch(fetchCart());
       await dispatch(fetchWishlist());
-
+      await dispatch(fetchNotifications())
+      
       toast.success("Login successful!");
       console.log(user)
       return user;
@@ -40,7 +41,7 @@ export const logoutUser = createAsyncThunk(
       dispatch(setUser(null));
       dispatch(resetCart());
       dispatch(resetWishlist());
-      dispatch(fetchNotifications())
+      
 
       sessionStorage.removeItem("user");
 

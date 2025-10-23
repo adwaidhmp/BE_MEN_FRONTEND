@@ -25,7 +25,7 @@ export default function AdminLayout() {
     { path: "/admin/users", label: "Users", icon: Users },
     { path: "/admin/orders", label: "Orders", icon: ShoppingBag },
     { path: "/admin/products", label: "Products", icon: Package },
-    { path: "/admin/feedback", label: "Feedbacks", icon: MessageCircle },
+    { path: "/admin/cancelled", label: "Cancelled", icon: MessageCircle },
   ];
 
   const isActive = (path) => location.pathname === path;

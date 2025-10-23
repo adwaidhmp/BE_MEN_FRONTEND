@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api";
+import { fetchNotifications } from "./NotificationSlice";
 
 
 // Fetch all user orders
@@ -65,12 +66,13 @@ export const placeOrder = createAsyncThunk(
 // Cancel order
 export const cancelOrder = createAsyncThunk(
   "order/cancelOrder",
-  async ({ orderId, reason }, { rejectWithValue }) => {
+  
+  async ({ orderId, reason }, { rejectWithValue,dispatch }) => {
     try {
       const res = await api.delete(`/my-orders/${orderId}/`, {
         data: { cancellation_reason: reason }, // send reason to backend
       });
-
+      await dispatch(fetchNotifications());
       // return orderId so the reducer can update state
       return { orderId, ...res.data }; 
     } catch (err) {
