@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 import adminapi from "../../adminapi";
 
-// -----------------------------------------------------
 // Fetch all orders (Admin)
 export const fetchAdminOrders = createAsyncThunk(
   "adminOrders/fetchAll",
@@ -16,22 +15,6 @@ export const fetchAdminOrders = createAsyncThunk(
   }
 );
 
-// -----------------------------------------------------
-// Fetch cancelled orders (Admin)
-export const fetchCancelledOrders = createAsyncThunk(
-  "adminOrders/fetchCancelled",
-  async (params = {}, { rejectWithValue }) => {
-    try {
-      const res = await adminapi.get("cancelled-orders/", { params });
-      console.log("res.data",res.data)
-      return res.data; // array of cancelled orders
-    } catch (err) {
-      return rejectWithValue(err.response?.data || "Failed to fetch cancelled orders");
-    }
-  }
-);
-
-// -----------------------------------------------------
 // Fetch single order by ID
 export const fetchAdminOrderDetail = createAsyncThunk(
   "adminOrders/fetchDetail",
@@ -45,7 +28,6 @@ export const fetchAdminOrderDetail = createAsyncThunk(
   }
 );
 
-// -----------------------------------------------------
 // Update order (status, tracking_id, delivery_date)
 export const updateAdminOrder = createAsyncThunk(
   "adminOrders/update",
@@ -67,21 +49,22 @@ export const updateAdminOrder = createAsyncThunk(
   }
 );
 
-// -----------------------------------------------------
 // Slice
 const adminOrderSlice = createSlice({
   name: "adminOrders",
   initialState: {
     loading: false,
     error: null,
-    data: [],             // All orders
-    cancelled: [],        // Cancelled orders
+    data: [],
+    cancelled: [],
     selectedOrder: null,
+    currentFilter: "all",
   },
   reducers: {
     clearAdminOrderError: (state) => { state.error = null; },
     clearSelectedOrder: (state) => { state.selectedOrder = null; },
     clearCancelledOrders: (state) => { state.cancelled = []; },
+    setCurrentFilter: (state, action) => { state.currentFilter = action.payload; },
   },
   extraReducers: (builder) => {
     builder
@@ -98,21 +81,6 @@ const adminOrderSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Fetch cancelled orders
-      .addCase(fetchCancelledOrders.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchCancelledOrders.fulfilled, (state, action) => {
-        state.loading = false;
-        state.cancelled = action.payload;
-      })
-      .addCase(fetchCancelledOrders.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
       // Fetch single order
       .addCase(fetchAdminOrderDetail.pending, (state) => {
         state.loading = true;
@@ -143,7 +111,7 @@ const adminOrderSlice = createSlice({
         }
 
         // Update in cancelled list if exists
-        const cancelIdx = state.cancelled.findIndex((o) => o.order_id === updated.id);
+        const cancelIdx = state.cancelled.findIndex((o) => o.id === updated.id);
         if (cancelIdx !== -1) state.cancelled[cancelIdx] = { ...state.cancelled[cancelIdx], ...updated };
 
         // Update selected order if open
@@ -157,5 +125,10 @@ const adminOrderSlice = createSlice({
   },
 });
 
-export const { clearAdminOrderError, clearSelectedOrder, clearCancelledOrders } = adminOrderSlice.actions;
+export const {
+  clearAdminOrderError,
+  clearSelectedOrder,
+  clearCancelledOrders,
+  setCurrentFilter
+} = adminOrderSlice.actions;
 export default adminOrderSlice.reducer;

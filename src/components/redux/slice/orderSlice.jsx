@@ -61,26 +61,38 @@ export const placeOrder = createAsyncThunk(
     }
   }
 );
-  
+
+
 
 // Cancel order
 export const cancelOrder = createAsyncThunk(
   "order/cancelOrder",
-  
-  async ({ orderId, reason }, { rejectWithValue,dispatch }) => {
+
+  async ({ orderId, reason }, { rejectWithValue, dispatch }) => {
     try {
       const res = await api.delete(`/my-orders/${orderId}/`, {
         data: { cancellation_reason: reason }, // send reason to backend
       });
       await dispatch(fetchNotifications());
       // return orderId so the reducer can update state
-      return { orderId, ...res.data }; 
+      return { orderId, ...res.data };
     } catch (err) {
       return rejectWithValue(err.response?.data?.error || err.message);
     }
   }
 );
 
+export const requestReturn = createAsyncThunk(
+  "order/requestReturn",
+  async ({ orderId, reason }, { rejectWithValue }) => {
+    try {
+      const res = await api.post(`/orders/${orderId}/return/`, { return_reason: reason }); 
+      return { orderId, data: res.data };
+    } catch (err) {
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
 
 
 // Update Order Address
@@ -102,7 +114,7 @@ const orderSlice = createSlice({
   name: "order",
   initialState: {
     orders: [],
-    currentOrder: null,  
+    currentOrder: null,
     lastOrder: null,
     razorpayInfo: null,
     loading: false,
@@ -183,6 +195,29 @@ const orderSlice = createSlice({
         state.error = action.payload;
       })
 
+      // requestReturn
+      .addCase(requestReturn.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(requestReturn.fulfilled, (state, action) => {
+        state.loading = false;
+        const { orderId } = action.payload;
+
+        // Update local state
+        state.orders = state.orders.map(o =>
+          o.id === orderId ? { ...o, order_status: "RETURN_PENDING" } : o
+        );
+
+        if (state.currentOrder?.id === orderId) {
+          state.currentOrder = { ...state.currentOrder, order_status: "RETURN_PENDING" };
+        }
+      })
+      .addCase(requestReturn.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
       //  cancelOrder
       .addCase(cancelOrder.pending, (state) => {
         state.loading = true;
@@ -214,12 +249,12 @@ const orderSlice = createSlice({
       })
       .addCase(updateOrderAddress.fulfilled, (state, action) => {
         state.loading = false;
-        
+
         // Update currentOrder if it's the same order
         if (state.currentOrder && state.currentOrder.id === action.payload.id) {
           state.currentOrder = { ...state.currentOrder, ...action.payload };
         }
-        
+
         // Update in orders array if it exists
         const index = state.orders.findIndex(o => o.id === action.payload.id);
         if (index !== -1) {

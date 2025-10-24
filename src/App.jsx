@@ -9,7 +9,7 @@ import Loader from './components/otherpages/Loader';
 import Navbar from './components/otherpages/navbar'
 import Wishlist from './components/pages/wishlist';
 import Cart from './components/pages/cart';
-import Contact from './components/contact'
+
 import Landing from './components/otherpages/Landing'
 import NotificationComponent from './components/user/notification';
 
@@ -37,9 +37,29 @@ const Users = lazy(() => import('./components/admin/Admuser'));
 const AdmOrders = lazy(() => import('./components/admin/Admorders'));
 const Products = lazy(() => import('./components/admin/Admproducts'));
 const CancelledOrdersPage = lazy(()=>import('./components/admin/CancelledOrder')) 
-
+import { useEffect } from "react";
+import { useDispatch} from "react-redux";
+import { fetchCart} from "./components/redux/slice/cartSlice"
+import {fetchWishlist} from "./components/redux/slice/wishlistSlice"
+import {fetchNotifications } from "./components/redux/slice/NotificationSlice"
+import { selectUser } from "./components/redux/slice/authSlice";
+import { useSelector } from "react-redux";
 
 function App() {
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser);
+
+  useEffect(() => {
+    if (user) {
+      const fetchData = async () => {
+        await dispatch(fetchCart());
+        await dispatch(fetchWishlist());
+        await dispatch(fetchNotifications());
+      };
+      fetchData();
+    }
+  }, [dispatch, user]);
+
   const location = useLocation();
 
   const isAdminRoute =
@@ -107,7 +127,6 @@ function App() {
 
         {/* GENERAL ROUTES */}
         <Route path="/about" element={<Aboutus />} />
-        <Route path="/contact" element={<Contact />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/" element={<Landing />} />
       </Routes>

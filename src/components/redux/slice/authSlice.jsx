@@ -18,7 +18,7 @@ export const loginUser = createAsyncThunk(
 
       await dispatch(fetchCart());
       await dispatch(fetchWishlist());
-      await dispatch(fetchNotifications())
+      await dispatch(fetchNotifications());
       
       toast.success("Login successful!");
       console.log(user)

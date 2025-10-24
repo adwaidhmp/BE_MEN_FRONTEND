@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchOrderDetail, cancelOrder, updateOrderAddress } from "../redux/slice/orderSlice";
+import { fetchOrderDetail, cancelOrder, updateOrderAddress, requestReturn } from "../redux/slice/orderSlice";
 import { toast } from "react-toastify";
 import {
   Package, Truck, CheckCircle, XCircle, Clock, MapPin, Phone,
   Calendar, DollarSign, ArrowLeft, AlertCircle, Hash, CreditCard, Crown,
-  Edit, Save, X
+  Edit, Save, X, RotateCcw
 } from "lucide-react";
 
 function OrderDetailPage() {
@@ -19,6 +19,8 @@ function OrderDetailPage() {
   const [cancelReason, setCancelReason] = useState("");
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [editedAddress, setEditedAddress] = useState("");
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [returnReason, setReturnReason] = useState("");
 
   useEffect(() => {
     dispatch(fetchOrderDetail(orderId));
@@ -31,34 +33,66 @@ function OrderDetailPage() {
     }
   }, [order?.shipping_address]);
 
-const handleCancelOrder = async () => {
-  if (!cancelReason.trim()) {
-    toast.error("Please provide a reason for cancellation");
-    return;
-  }
-
-  if (!order?.id) {
-    toast.error("Order ID is not available");
-    return;
-  }
-
-  try {
-    const resultAction = await dispatch(cancelOrder({ 
-      orderId: order.id, 
-      reason: cancelReason 
-    }));
-
-    if (cancelOrder.fulfilled.match(resultAction)) {
-      toast.success("Order cancelled successfully");
-      setShowCancelModal(false);
-    } else {
-      toast.error(resultAction.payload || "Failed to cancel order");
+  const handleCancelOrder = async () => {
+    if (!cancelReason.trim()) {
+      toast.error("Please provide a reason for cancellation");
+      return;
     }
-  } catch (err) {
-    console.log(err);
-    toast.error("Failed to cancel order");
-  }
-};
+
+    if (!order?.id) {
+      toast.error("Order ID is not available");
+      return;
+    }
+
+    try {
+      const resultAction = await dispatch(cancelOrder({ 
+        orderId: order.id, 
+        reason: cancelReason 
+      }));
+
+      if (cancelOrder.fulfilled.match(resultAction)) {
+        toast.success("Order cancelled successfully");
+        setShowCancelModal(false);
+      } else {
+        toast.error(resultAction.payload || "Failed to cancel order");
+      }
+    } catch (err) {
+      console.log(err);
+      toast.error("Failed to cancel order");
+    }
+  };
+
+  const handleReturnOrder = async () => {
+    if (!returnReason.trim()) {
+      toast.error("Please provide a reason for return");
+      return;
+    }
+
+    if (!order?.id) {
+      toast.error("Order ID is not available");
+      return;
+    }
+
+    try {
+      const resultAction = await dispatch(requestReturn({ 
+        orderId: order.id, 
+        reason: returnReason 
+      }));
+
+      if (requestReturn.fulfilled.match(resultAction)) {
+        toast.success("Return request submitted successfully");
+        setShowReturnModal(false);
+        setReturnReason("");
+        // Refresh order details to get updated status
+        dispatch(fetchOrderDetail(orderId));
+      } else {
+        toast.error(resultAction.payload || "Failed to submit return request");
+      }
+    } catch (err) {
+      console.log(err);
+      toast.error("Failed to submit return request");
+    }
+  };
 
   const handleUpdateAddress = async () => {
     if (!editedAddress.trim()) {
@@ -93,6 +127,10 @@ const handleCancelOrder = async () => {
       SHIPPED: "bg-purple-100 text-purple-700 border-purple-200",
       DELIVERED: "bg-green-100 text-green-700 border-green-200",
       CANCELLED: "bg-red-100 text-red-700 border-red-200",
+      RETURN_PENDING: "bg-orange-100 text-orange-700 border-orange-200",
+      RETURN_APPROVED: "bg-blue-100 text-blue-700 border-blue-200",
+      RETURN_REJECTED: "bg-red-100 text-red-700 border-red-200",
+      RETURN_COMPLETED: "bg-green-100 text-green-700 border-green-200",
     };
     return colors[status] || "bg-stone-100 text-stone-700 border-stone-200";
   };
@@ -104,12 +142,24 @@ const handleCancelOrder = async () => {
       SHIPPED: <Truck className="w-5 h-5" />,
       DELIVERED: <CheckCircle className="w-5 h-5" />,
       CANCELLED: <XCircle className="w-5 h-5" />,
+      RETURN_PENDING: <RotateCcw className="w-5 h-5" />,
+      RETURN_APPROVED: <RotateCcw className="w-5 h-5" />,
+      RETURN_REJECTED: <XCircle className="w-5 h-5" />,
+      RETURN_COMPLETED: <CheckCircle className="w-5 h-5" />,
     };
     return icons[status] || <Clock className="w-5 h-5" />;
   };
 
   const canCancelOrder = (status) => {
     return status === "PENDING" || status === "PROCESSING";
+  };
+
+  const canReturnOrder = (status) => {
+    // Allow returns only for delivered orders that haven't been returned already
+    const returnEligibleStatuses = ["DELIVERED"];
+    const alreadyReturnedStatuses = ["RETURN_PENDING", "RETURN_APPROVED", "RETURN_REJECTED", "RETURN_COMPLETED"];
+    
+    return returnEligibleStatuses.includes(status) && !alreadyReturnedStatuses.includes(status);
   };
 
   const canEditAddress = (status) => {
@@ -327,10 +377,10 @@ const handleCancelOrder = async () => {
             </div>
 
             {/* Actions */}
-            {canCancelOrder(order.order_status) && (
-              <div className="bg-white rounded-xl border border-stone-200 p-6">
-                <h2 className="font-serif text-xl text-stone-900 mb-4">Order Actions</h2>
-                <div className="flex gap-3">
+            <div className="bg-white rounded-xl border border-stone-200 p-6">
+              <h2 className="font-serif text-xl text-stone-900 mb-4">Order Actions</h2>
+              <div className="flex gap-3 flex-wrap">
+                {canCancelOrder(order.order_status) && (
                   <button
                     onClick={() => setShowCancelModal(true)}
                     className="px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-all flex items-center gap-2 border border-red-600"
@@ -338,12 +388,21 @@ const handleCancelOrder = async () => {
                     <XCircle className="w-5 h-5" />
                     Cancel Order
                   </button>
-                  <button className="px-6 py-3 bg-stone-200 text-stone-700 rounded-lg font-medium hover:bg-stone-300 transition-all border border-stone-300">
-                    Need Help?
+                )}
+                {canReturnOrder(order.order_status) && (
+                  <button
+                    onClick={() => setShowReturnModal(true)}
+                    className="px-6 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-all flex items-center gap-2 border border-orange-600"
+                  >
+                    <RotateCcw className="w-5 h-5" />
+                    Return Product
                   </button>
-                </div>
+                )}
+                <button className="px-6 py-3 bg-stone-200 text-stone-700 rounded-lg font-medium hover:bg-stone-300 transition-all border border-stone-300">
+                  Need Help?
+                </button>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Right Column - Order Summary */}
@@ -419,10 +478,18 @@ const handleCancelOrder = async () => {
                   </div>
 
                   {/* Delivered */}
-                  <div className={`flex items-center gap-3 ${order.order_status === 'DELIVERED' ? 'text-green-600' : 'text-stone-400'}`}>
+                  <div className={`flex items-center gap-3 ${['DELIVERED', 'RETURN_PENDING', 'RETURN_APPROVED', 'RETURN_REJECTED', 'RETURN_COMPLETED'].includes(order.order_status) ? 'text-green-600' : 'text-stone-400'}`}>
                     <CheckCircle className="w-5 h-5" />
                     <span className="text-sm font-medium">Delivered</span>
                   </div>
+
+                  {/* Return Status (if applicable) */}
+                  {['RETURN_PENDING', 'RETURN_APPROVED', 'RETURN_REJECTED', 'RETURN_COMPLETED'].includes(order.order_status) && (
+                    <div className={`flex items-center gap-3 ${order.order_status === 'RETURN_COMPLETED' ? 'text-green-600' : order.order_status === 'RETURN_REJECTED' ? 'text-red-600' : 'text-orange-600'}`}>
+                      <RotateCcw className="w-5 h-5" />
+                      <span className="text-sm font-medium capitalize">{order.order_status.replace('_', ' ')}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -455,6 +522,42 @@ const handleCancelOrder = async () => {
                 className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-all border border-red-600"
               >
                 Confirm Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Return Modal */}
+      {showReturnModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h2 className="text-xl font-serif text-stone-900 mb-4">Return Order #{order.id}</h2>
+            <p className="text-stone-600 mb-4 font-light">
+              Please provide the reason for returning this product. Our team will review your request.
+            </p>
+            <textarea
+              value={returnReason}
+              onChange={(e) => setReturnReason(e.target.value)}
+              placeholder="Enter reason for return (e.g., wrong size, damaged product, not as described, etc.)"
+              className="w-full border border-stone-300 rounded-lg p-3 mb-4 text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              rows={4}
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowReturnModal(false);
+                  setReturnReason("");
+                }}
+                className="px-4 py-2 bg-stone-200 text-stone-700 rounded-lg font-medium hover:bg-stone-300 transition-all border border-stone-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReturnOrder}
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-all border border-orange-600"
+              >
+                Submit Return Request
               </button>
             </div>
           </div>
