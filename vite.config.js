@@ -12,4 +12,8 @@ export default defineConfig({
       ignored: ['**/db.json'], 
     },
   },
+  build: {
+    outDir: 'dist',
+  },
+  base: '/', // ✅ <--- THIS FIXES THE NETLIFY MIME ERROR
 })
