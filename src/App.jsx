@@ -115,8 +115,8 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
 
-        <Route path="/home" element={<ProtectedRoute><Suspense fallback={<Loader />}><Homepage /></Suspense></ProtectedRoute>} />
-        <Route path="/product/:id" element={<ProtectedRoute><ProductDetails /></ProtectedRoute>}/>
+        <Route path="/home" element={<Suspense fallback={<Loader />}><Homepage /></Suspense>} />
+        <Route path="/product/:id" element={<ProductDetails />}/>
         <Route path="/notifications" element={<ProtectedRoute><NotificationComponent /></ProtectedRoute>} />
         <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
         <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
