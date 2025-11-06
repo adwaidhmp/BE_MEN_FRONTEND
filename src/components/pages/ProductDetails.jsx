@@ -31,7 +31,7 @@ function ProductDetails() {
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const res = await fetch(`http://localhost:8000/api/v1/user/products/${id}/`);
+        const res = await fetch(`https://bemen.duckdns.org/api/v1/user/products/${id}/`);
         const data = await res.json();
 
         setProduct({

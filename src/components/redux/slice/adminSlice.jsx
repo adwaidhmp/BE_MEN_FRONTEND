@@ -22,11 +22,12 @@ export const fetchAdminDashboard = createAsyncThunk(
 // 2️⃣ Fetch all users
 export const fetchAdminUsers = createAsyncThunk(
   "admin/fetchUsers",
-  async (_, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue }) => {
     try {
-      const res = await adminapi.get("users/");
-      console.log("res.data :",res.data)
-      return res.data.results;
+      const { page = 1, page_size = 10, search = "" } = params;
+      const res = await adminapi.get(`users/?page=${page}&page_size=${page_size}&search=${search}`);
+      console.log("res.data :", res.data);
+      return res.data; // Return full pagination response, not just results
     } catch (err) {
       return rejectWithValue(err.response?.data || "Something went wrong");
     }
@@ -84,7 +85,7 @@ const adminSlice = createSlice({
     users: {
       loading: false,
       error: null,
-      data: [],
+      data: null, // Change from [] to null initially
       selectedUser: null,
       banStatus: null,
     },
@@ -135,7 +136,7 @@ const adminSlice = createSlice({
       })
       .addCase(fetchAdminUsers.fulfilled, (state, action) => {
         state.users.loading = false;
-        state.users.data = action.payload;
+        state.users.data = action.payload; // Store the entire pagination response
       })
       .addCase(fetchAdminUsers.rejected, (state, action) => {
         state.users.loading = false;
@@ -165,16 +166,18 @@ const adminSlice = createSlice({
         state.users.banStatus = action.payload.message;
 
         // Update the user in users list
-        const idx = state.users.data.findIndex(u => u.id === action.payload.userId);
-        if (idx !== -1) {
-          const wasBanned = state.users.data[idx].is_banned;
-          state.users.data[idx].is_banned = !wasBanned;
-          
-          // Show toast message for ban/unban
-          if (wasBanned) {
-            toast.success("User unbanned successfully!");
-          } else {
-            toast.success("User banned successfully!");
+        if (state.users.data && state.users.data.results) {
+          const idx = state.users.data.results.findIndex(u => u.id === action.payload.userId);
+          if (idx !== -1) {
+            const wasBanned = state.users.data.results[idx].is_banned;
+            state.users.data.results[idx].is_banned = !wasBanned;
+
+            // Show toast message for ban/unban
+            if (wasBanned) {
+              toast.success("User unbanned successfully!");
+            } else {
+              toast.success("User banned successfully!");
+            }
           }
         }
 

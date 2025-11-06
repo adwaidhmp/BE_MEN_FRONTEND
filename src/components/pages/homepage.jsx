@@ -55,7 +55,7 @@ function Homepage() {
     async function fetchProducts() {
       setIsLoaded(false);
       try {
-        let url = `http://localhost:8000/api/v1/user/products/?page=${currentPage}`;
+        let url = `https://bemen.duckdns.org/api/v1/user/products/?page=${currentPage}`;
         if (selectedCategory !== "all") url += `&category=${selectedCategory}`;
         if (searchQuery.trim()) url += `&search=${searchQuery}`;
         if (priceSort === "low-high") url += `&ordering=price`;

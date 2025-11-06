@@ -4,23 +4,26 @@ import {
   fetchAdminOrders,
   updateAdminOrder,
 } from "../redux/slice/adminOrderSlice";
-import { 
-  Package, 
-  Truck, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Filter, 
-  Search, 
-  ChevronDown, 
-  ChevronUp, 
-  Eye, 
-  Calendar, 
-  MapPin, 
-  DollarSign, 
+import {
+  Package,
+  Truck,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Filter,
+  Search,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  Calendar,
+  MapPin,
+  DollarSign,
   User,
   Plus,
-  Minus
+  Minus,
+  AlertCircle,
+  RefreshCw,
+  RotateCcw
 } from "lucide-react";
 
 function AdmOrders() {
@@ -35,6 +38,8 @@ function AdmOrders() {
   const [currentPage, setCurrentPage] = useState(1);
   const [shippingData, setShippingData] = useState({});
   const [showShippingForm, setShowShippingForm] = useState({});
+  const [showCancelForm, setShowCancelForm] = useState({});
+  const [cancelReasons, setCancelReasons] = useState({});
 
   // Extract orders and pagination info from response
   const orders = ordersData?.results || [];
@@ -70,6 +75,16 @@ function AdmOrders() {
           delivery_date: "",
         },
       }));
+    } else if (newStatus === "CANCELLED") {
+      // Show cancellation form instead of immediately updating
+      setShowCancelForm((prev) => ({
+        ...prev,
+        [orderId]: true,
+      }));
+      setCancelReasons((prev) => ({
+        ...prev,
+        [orderId]: "",
+      }));
     } else {
       dispatch(updateAdminOrder({ orderId, updateData: { order_status: newStatus } }));
     }
@@ -78,17 +93,38 @@ function AdmOrders() {
   const handleShippingSubmit = (orderId) => {
     const data = shippingData[orderId];
     if (data.tracking_id && data.delivery_date) {
-      dispatch(updateAdminOrder({ 
-        orderId, 
-        updateData: { 
+      dispatch(updateAdminOrder({
+        orderId,
+        updateData: {
           order_status: "SHIPPED",
           tracking_id: data.tracking_id,
           delivery_date: data.delivery_date
-        } 
+        }
       }));
       setShowShippingForm((prev) => ({
         ...prev,
         [orderId]: false,
+      }));
+    }
+  };
+
+  const handleCancelSubmit = (orderId) => {
+    const reason = cancelReasons[orderId];
+    if (reason && reason.trim()) {
+      dispatch(updateAdminOrder({
+        orderId,
+        updateData: {
+          order_status: "CANCELLED",
+          cancellation_reason: reason.trim()
+        }
+      }));
+      setShowCancelForm((prev) => ({
+        ...prev,
+        [orderId]: false,
+      }));
+      setCancelReasons((prev) => ({
+        ...prev,
+        [orderId]: "",
       }));
     }
   };
@@ -103,14 +139,22 @@ function AdmOrders() {
     }));
   };
 
+  const handleCancelReasonChange = (orderId, reason) => {
+    setCancelReasons((prev) => ({
+      ...prev,
+      [orderId]: reason,
+    }));
+  };
+
   const getStatusColor = (status) => {
     const colors = {
       PENDING: "bg-amber-100 text-amber-700 border-amber-200",
       PROCESSING: "bg-blue-100 text-blue-700 border-blue-200",
       SHIPPED: "bg-purple-100 text-purple-700 border-purple-200",
-      OUT_FOR_DELIVERY : "bg-yellow-100 text-yellow-700 border-yellow-200",
+      OUT_FOR_DELIVERY: "bg-yellow-100 text-yellow-700 border-yellow-200",
       DELIVERED: "bg-green-100 text-green-700 border-green-200",
       CANCELLED: "bg-red-100 text-red-700 border-red-200",
+      RETURNED: "bg-orange-100 text-orange-700 border-orange-200",
     };
     return colors[status] || "bg-stone-100 text-stone-700 border-stone-200";
   };
@@ -120,12 +164,25 @@ function AdmOrders() {
       PENDING: <Clock className="w-4 h-4" />,
       PROCESSING: <Package className="w-4 h-4" />,
       SHIPPED: <Truck className="w-4 h-4" />,
-      OUT_FOR_DELIVERY: <CheckCircle className="w-4 h-4" />,
+      OUT_FOR_DELIVERY: <Truck className="w-4 h-4" />,
       DELIVERED: <CheckCircle className="w-4 h-4" />,
       CANCELLED: <XCircle className="w-4 h-4" />,
+      RETURNED: <RotateCcw className="w-4 h-4" />,
     };
     return icons[status] || <Clock className="w-4 h-4" />;
   };
+
+  // Predefined cancellation reasons
+  const cancellationReasons = [
+    "Out of stock",
+    "Customer request",
+    "Payment issue",
+    "Invalid address",
+    "Suspicious activity",
+    "Price mismatch",
+    "Technical error",
+    "Other"
+  ];
 
   // Pagination handlers
   const handleNextPage = () => {
@@ -147,22 +204,22 @@ function AdmOrders() {
   // Generate page numbers for pagination
   const generatePageNumbers = () => {
     if (!pagination.count) return [];
-    
+
     const totalPages = Math.ceil(pagination.count / (pagination.page_size || 10));
     const pages = [];
     const maxVisiblePages = 5;
-    
+
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-    
+
     return pages;
   };
 
@@ -196,21 +253,20 @@ function AdmOrders() {
 
           {/* Filters */}
           <div className="flex flex-wrap gap-2">
-            {["all",  "PROCESSING", "SHIPPED","OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"].map((status) => (
+            {["all", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED", "RETURNED"].map((status) => (
               <button
                 key={status}
                 onClick={() => {
                   setFilter(status);
                   setCurrentPage(1); // Reset to first page when filter changes
                 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border ${
-                  filter === status
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border ${filter === status
                     ? "bg-amber-600 text-white border-amber-600"
                     : "bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200"
-                }`}
+                  }`}
               >
                 <Filter className="w-3 h-3" />
-                {status === "all" ? "All Orders" : status}
+                {status === "all" ? "All Orders" : status.replace(/_/g, ' ')}
               </button>
             ))}
           </div>
@@ -226,7 +282,7 @@ function AdmOrders() {
           </div>
         </div>
       )}
-      
+
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <p className="text-red-700 font-medium">{error}</p>
@@ -276,9 +332,9 @@ function AdmOrders() {
                 <div className="flex items-center gap-4">
                   <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(order.order_status)}`}>
                     {getStatusIcon(order.order_status)}
-                    {order.order_status}
+                    {order.order_status.replace(/_/g, ' ')}
                   </span>
-                  
+
                   <button
                     onClick={() => handleToggle(order.id)}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm bg-stone-900 text-amber-50 hover:bg-stone-800 transition-all border border-stone-900"
@@ -311,8 +367,8 @@ function AdmOrders() {
                   <div className="space-y-4">
                     {/* Product Card */}
                     <div className="flex items-center gap-4 p-3 bg-stone-50 rounded-lg border border-stone-200">
-                      <img 
-                        src={order.product?.product_image} 
+                      <img
+                        src={order.product?.product_image}
                         alt={order.product?.name}
                         className="w-16 h-16 object-cover rounded-lg border border-stone-200"
                       />
@@ -325,11 +381,10 @@ function AdmOrders() {
                           <span>Total: ${order.total_amount}</span>
                         </div>
                       </div>
-                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        order.product?.active 
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${order.product?.active
                           ? "bg-green-100 text-green-700 border border-green-200"
                           : "bg-red-100 text-red-700 border border-red-200"
-                      }`}>
+                        }`}>
                         {order.product?.active ? "Active" : "Inactive"}
                       </div>
                     </div>
@@ -348,7 +403,7 @@ function AdmOrders() {
                     ) : (
                       <p className="text-stone-500 text-sm">No shipping address provided</p>
                     )}
-                    
+
                     {order.tracking_id && (
                       <div className="mt-3 flex items-center gap-2 text-sm">
                         <Truck className="w-4 h-4 text-stone-400" />
@@ -356,7 +411,7 @@ function AdmOrders() {
                         <span className="font-medium">{order.tracking_id}</span>
                       </div>
                     )}
-                    
+
                     {order.delivery_date && (
                       <div className="mt-2 flex items-center gap-2 text-sm">
                         <Calendar className="w-4 h-4 text-stone-400" />
@@ -385,9 +440,8 @@ function AdmOrders() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-stone-600">Payment Status:</span>
-                        <span className={`font-medium ${
-                          order.payment_status === 'PAID' ? 'text-green-600' : 'text-amber-600'
-                        }`}>
+                        <span className={`font-medium ${order.payment_status === 'PAID' ? 'text-green-600' : 'text-amber-600'
+                          }`}>
                           {order.payment_status || "PENDING"}
                         </span>
                       </div>
@@ -395,10 +449,40 @@ function AdmOrders() {
                   </div>
                 </div>
 
+                {/* Cancellation Reason Display */}
+                {order.order_status === "CANCELLED" && order.cancellation_reason && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                    <h4 className="font-medium text-red-900 mb-2 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
+                      Cancellation Reason
+                    </h4>
+                    <p className="text-red-700">{order.cancellation_reason}</p>
+                    <div className="mt-2 text-sm text-red-600">
+                      <span className="font-medium">Cancelled on: </span>
+                      {new Date(order.cancelled_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                )}
+
+                {/* Return Reason Display */}
+                {order.order_status === "RETURNED" && order.return_reason && (
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                    <h4 className="font-medium text-orange-900 mb-2 flex items-center gap-2">
+                      <RotateCcw className="w-4 h-4" />
+                      Return Reason
+                    </h4>
+                    <p className="text-orange-700">{order.return_reason}</p>
+                    <div className="mt-2 text-sm text-orange-600">
+                      <span className="font-medium">Returned on: </span>
+                      {new Date(order.returned_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                )}
+
                 {/* Order Actions */}
                 <div className="bg-white rounded-lg border border-stone-200 p-4">
                   <h4 className="font-medium text-stone-900 mb-4">Update Order Status</h4>
-                  
+
                   {/* Shipping Form */}
                   {showShippingForm[order.id] && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
@@ -439,7 +523,62 @@ function AdmOrders() {
                           Confirm Shipping
                         </button>
                         <button
-                          onClick={() => setShowShippingForm(prev => ({...prev, [order.id]: false}))}
+                          onClick={() => setShowShippingForm(prev => ({ ...prev, [order.id]: false }))}
+                          className="flex items-center gap-2 px-4 py-2 bg-stone-600 text-white rounded-lg font-medium hover:bg-stone-700 transition-all border border-stone-600"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Cancellation Form */}
+                  {showCancelForm[order.id] && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                      <h5 className="font-medium text-red-900 mb-3">Cancellation Details</h5>
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-stone-700 mb-2">
+                          Cancellation Reason *
+                        </label>
+
+                        {/* Quick reason buttons */}
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {cancellationReasons.map((reason) => (
+                            <button
+                              key={reason}
+                              type="button"
+                              onClick={() => handleCancelReasonChange(order.id, reason)}
+                              className="px-3 py-1 text-sm bg-white border border-red-200 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
+                            >
+                              {reason}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Custom reason textarea */}
+                        <textarea
+                          value={cancelReasons[order.id] || ""}
+                          onChange={(e) => handleCancelReasonChange(order.id, e.target.value)}
+                          className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                          placeholder="Enter cancellation reason or select from quick options above"
+                          rows="3"
+                        />
+                      </div>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleCancelSubmit(order.id)}
+                          disabled={!cancelReasons[order.id] || !cancelReasons[order.id].trim()}
+                          className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-all border border-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          Confirm Cancellation
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowCancelForm(prev => ({ ...prev, [order.id]: false }));
+                            setCancelReasons(prev => ({ ...prev, [order.id]: "" }));
+                          }}
                           className="flex items-center gap-2 px-4 py-2 bg-stone-600 text-white rounded-lg font-medium hover:bg-stone-700 transition-all border border-stone-600"
                         >
                           <XCircle className="w-4 h-4" />
@@ -470,14 +609,14 @@ function AdmOrders() {
                       </button>
                     )}
                     {order.order_status === "SHIPPED" && (
-                    <button
-                      onClick={() => handleStatusChange(order.id, "OUT_FOR_DELIVERY")}
-                      className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-lg font-medium hover:bg-yellow-700 transition-all border border-yellow-600"
-                    >
-                      <Truck className="w-4 h-4" />
-                      Mark as Out for Delivery
-                    </button>
-                  )}
+                      <button
+                        onClick={() => handleStatusChange(order.id, "OUT_FOR_DELIVERY")}
+                        className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-lg font-medium hover:bg-yellow-700 transition-all border border-yellow-600"
+                      >
+                        <Truck className="w-4 h-4" />
+                        Mark as Out for Delivery
+                      </button>
+                    )}
                     {order.order_status === "OUT_FOR_DELIVERY" && (
                       <button
                         onClick={() => handleStatusChange(order.id, "DELIVERED")}
@@ -487,15 +626,18 @@ function AdmOrders() {
                         Mark as Delivered
                       </button>
                     )}
-                    {order.order_status !== "CANCELLED" && order.order_status !== "DELIVERED" && !showShippingForm[order.id] && (
-                      <button
-                        onClick={() => handleStatusChange(order.id, "CANCELLED")}
-                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-all border border-red-600"
-                      >
-                        <XCircle className="w-4 h-4" />
-                        Cancel Order
-                      </button>
-                    )}
+
+                    {/* Cancellation Button - Only show for PENDING and PROCESSING orders */}
+                    {(order.order_status === "PENDING" || order.order_status === "PROCESSING") &&
+                      !showShippingForm[order.id] && !showCancelForm[order.id] && (
+                        <button
+                          onClick={() => handleStatusChange(order.id, "CANCELLED")}
+                          className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-all border border-red-600"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          Cancel Order
+                        </button>
+                      )}
                   </div>
                 </div>
               </div>
@@ -513,7 +655,7 @@ function AdmOrders() {
               {Math.min(currentPage * (pagination.page_size || 10), pagination.count)} of{" "}
               {pagination.count} orders
             </div>
-            
+
             <div className="flex items-center gap-2">
               {/* Previous Button */}
               <button
@@ -530,11 +672,10 @@ function AdmOrders() {
                 <button
                   key={page}
                   onClick={() => handlePageClick(page)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
-                    currentPage === page
+                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${currentPage === page
                       ? "bg-amber-600 text-white border-amber-600"
                       : "border-stone-300 text-stone-700 hover:bg-stone-50"
-                  }`}
+                    }`}
                 >
                   {page}
                 </button>
