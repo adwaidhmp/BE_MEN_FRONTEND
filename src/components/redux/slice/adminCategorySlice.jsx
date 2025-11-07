@@ -3,23 +3,24 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 import adminapi from "../../adminapi";
 
-// --- THUNKS ---
-
+// ---------------------------------------------------------------------
 // 1️⃣ Fetch all categories
+// ---------------------------------------------------------------------
 export const fetchAdminCategories = createAsyncThunk(
   "adminCategory/fetchCategories",
-  async (params = {}, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const { page = 1, page_size = 10, search = "" } = params;
-      const res = await adminapi.get(`category/?page=${page}&page_size=${page_size}&search=${search}`);
-      return res.data;
+      const res = await adminapi.get("category/");
+      return res.data; // expects an array of categories
     } catch (err) {
       return rejectWithValue(err.response?.data || "Something went wrong");
     }
   }
 );
 
+// ---------------------------------------------------------------------
 // 2️⃣ Fetch single category details
+// ---------------------------------------------------------------------
 export const fetchAdminCategoryDetail = createAsyncThunk(
   "adminCategory/fetchCategoryDetail",
   async (categoryId, { rejectWithValue }) => {
@@ -32,12 +33,14 @@ export const fetchAdminCategoryDetail = createAsyncThunk(
   }
 );
 
+// ---------------------------------------------------------------------
 // 3️⃣ Create new category
+// ---------------------------------------------------------------------
 export const createAdminCategory = createAsyncThunk(
   "adminCategory/createCategory",
   async (categoryData, { rejectWithValue }) => {
     try {
-      const res = await adminapi.post(`category/`, categoryData);
+      const res = await adminapi.post("category/", categoryData);
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || "Something went wrong");
@@ -45,7 +48,9 @@ export const createAdminCategory = createAsyncThunk(
   }
 );
 
+// ---------------------------------------------------------------------
 // 4️⃣ Update category
+// ---------------------------------------------------------------------
 export const updateAdminCategory = createAsyncThunk(
   "adminCategory/updateCategory",
   async ({ categoryId, categoryData }, { rejectWithValue }) => {
@@ -58,7 +63,9 @@ export const updateAdminCategory = createAsyncThunk(
   }
 );
 
+// ---------------------------------------------------------------------
 // 5️⃣ Delete category
+// ---------------------------------------------------------------------
 export const deleteAdminCategory = createAsyncThunk(
   "adminCategory/deleteCategory",
   async (categoryId, { rejectWithValue }) => {
@@ -71,14 +78,16 @@ export const deleteAdminCategory = createAsyncThunk(
   }
 );
 
-// --- SLICE ---
+// ---------------------------------------------------------------------
+// SLICE
+// ---------------------------------------------------------------------
 const adminCategorySlice = createSlice({
   name: "adminCategory",
   initialState: {
     categories: {
       loading: false,
       error: null,
-      data: null,
+      data: [],
     },
     currentCategory: {
       loading: false,
@@ -107,14 +116,9 @@ const adminCategorySlice = createSlice({
       state.operation.success = null;
     },
     resetCategoryState: (state) => {
-      state.categories.loading = false;
-      state.categories.error = null;
-      state.currentCategory.loading = false;
-      state.currentCategory.error = null;
-      state.currentCategory.data = null;
-      state.operation.loading = false;
-      state.operation.error = null;
-      state.operation.success = null;
+      state.categories = { loading: false, error: null, data: [] };
+      state.currentCategory = { loading: false, error: null, data: null };
+      state.operation = { loading: false, error: null, success: null };
     },
   },
   extraReducers: (builder) => {
@@ -126,7 +130,7 @@ const adminCategorySlice = createSlice({
       })
       .addCase(fetchAdminCategories.fulfilled, (state, action) => {
         state.categories.loading = false;
-        state.categories.data = action.payload;
+        state.categories.data = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(fetchAdminCategories.rejected, (state, action) => {
         state.categories.loading = false;
@@ -158,13 +162,7 @@ const adminCategorySlice = createSlice({
       .addCase(createAdminCategory.fulfilled, (state, action) => {
         state.operation.loading = false;
         state.operation.success = "Category created successfully!";
-        
-        // Add the new category to the list if it exists
-        if (state.categories.data && state.categories.data.results) {
-          state.categories.data.results.unshift(action.payload);
-          state.categories.data.count += 1;
-        }
-        
+        state.categories.data.unshift(action.payload);
         toast.success("Category created successfully!");
       })
       .addCase(createAdminCategory.rejected, (state, action) => {
@@ -183,22 +181,21 @@ const adminCategorySlice = createSlice({
       .addCase(updateAdminCategory.fulfilled, (state, action) => {
         state.operation.loading = false;
         state.operation.success = "Category updated successfully!";
-        
-        // Update the category in the list
-        if (state.categories.data && state.categories.data.results) {
-          const index = state.categories.data.results.findIndex(
-            cat => cat.id === action.payload.id
-          );
-          if (index !== -1) {
-            state.categories.data.results[index] = action.payload;
-          }
+
+        const index = state.categories.data.findIndex(
+          (cat) => cat.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.categories.data[index] = action.payload;
         }
-        
-        // Update current category if it's the same one
-        if (state.currentCategory.data && state.currentCategory.data.id === action.payload.id) {
+
+        if (
+          state.currentCategory.data &&
+          state.currentCategory.data.id === action.payload.id
+        ) {
           state.currentCategory.data = action.payload;
         }
-        
+
         toast.success("Category updated successfully!");
       })
       .addCase(updateAdminCategory.rejected, (state, action) => {
@@ -217,20 +214,17 @@ const adminCategorySlice = createSlice({
       .addCase(deleteAdminCategory.fulfilled, (state, action) => {
         state.operation.loading = false;
         state.operation.success = "Category deleted successfully!";
-        
-        // Remove the category from the list
-        if (state.categories.data && state.categories.data.results) {
-          state.categories.data.results = state.categories.data.results.filter(
-            cat => cat.id !== action.payload
-          );
-          state.categories.data.count -= 1;
-        }
-        
-        // Clear current category if it's the same one
-        if (state.currentCategory.data && state.currentCategory.data.id === action.payload) {
+        state.categories.data = state.categories.data.filter(
+          (cat) => cat.id !== action.payload
+        );
+
+        if (
+          state.currentCategory.data &&
+          state.currentCategory.data.id === action.payload
+        ) {
           state.currentCategory.data = null;
         }
-        
+
         toast.success("Category deleted successfully!");
       })
       .addCase(deleteAdminCategory.rejected, (state, action) => {
