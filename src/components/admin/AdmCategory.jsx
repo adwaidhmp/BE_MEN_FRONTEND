@@ -5,7 +5,8 @@ import {
   Edit, 
   Trash2, 
   Folder, 
-  X
+  X,
+  AlertTriangle
 } from "lucide-react";
 import {
   fetchAdminCategories,
@@ -17,6 +18,8 @@ import {
 export default function Categories() {
   const dispatch = useDispatch();
   const [showForm, setShowForm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
   const [categoryName, setCategoryName] = useState("");
 
@@ -26,7 +29,6 @@ export default function Categories() {
   } = useSelector((state) => state.adminCategory);
 
   const categories = categoriesState?.data?.results || [];
-  console.log(categories)
 
   // Fetch categories on mount
   useEffect(() => {
@@ -49,10 +51,22 @@ export default function Categories() {
     resetForm();
   };
 
-  const handleDeleteCategory = (categoryId) => {
-    if (window.confirm("Are you sure you want to delete this category?")) {
-      dispatch(deleteAdminCategory(categoryId));
+  const handleDeleteClick = (category) => {
+    setCategoryToDelete(category);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (categoryToDelete) {
+      dispatch(deleteAdminCategory(categoryToDelete.id));
+      setShowDeleteConfirm(false);
+      setCategoryToDelete(null);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setCategoryToDelete(null);
   };
 
   const handleEditCategory = (category) => {
@@ -171,7 +185,7 @@ export default function Categories() {
                       </button>
 
                       <button
-                        onClick={() => handleDeleteCategory(category.id)}
+                        onClick={() => handleDeleteClick(category)}
                         className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-sm bg-red-600 text-white hover:bg-red-700 transition-all"
                       >
                         <Trash2 size={14} />
@@ -256,6 +270,72 @@ export default function Categories() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="absolute inset-0 bg-white bg-opacity-80 backdrop-blur-sm rounded-xl flex items-center justify-center z-20">
+          <div className="bg-white rounded-xl border border-stone-200 shadow-2xl w-full max-w-md mx-6">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-stone-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center border border-red-200">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-xl text-stone-900">Delete Category</h3>
+                  <p className="text-sm text-stone-500 font-light">This action cannot be undone</p>
+                </div>
+              </div>
+              <button
+                onClick={handleCancelDelete}
+                className="p-2 text-stone-400 hover:text-stone-600 transition-colors hover:bg-stone-100 rounded-lg"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                <p className="text-red-700 font-medium">
+                  Are you sure you want to delete the category{" "}
+                  <span className="font-bold">"{categoryToDelete?.category}"</span>?
+                </p>
+                <p className="text-red-600 text-sm mt-2">
+                  This will permanently remove the category and cannot be recovered.
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex gap-3 p-6 border-t border-stone-200">
+              <button
+                onClick={handleConfirmDelete}
+                disabled={operation.loading}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-all disabled:opacity-50"
+              >
+                {operation.loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={16} />
+                    Delete Category
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleCancelDelete}
+                className="flex-1 py-3 rounded-lg font-medium bg-stone-200 text-stone-700 hover:bg-stone-300 transition-all"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

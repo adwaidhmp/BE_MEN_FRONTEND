@@ -2,7 +2,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { logoutUser, selectUser } from "../redux/slice/authSlice";
-import { Crown, LogOut, Users, Package, ShoppingBag, MessageCircle, LayoutDashboard } from "lucide-react";
+import { Crown, LogOut, Users, Package, ShoppingBag, MessageCircle, LayoutDashboard,Folder } from "lucide-react";
 
 export default function AdminLayout() {
   const user = useSelector(selectUser);
@@ -25,8 +25,8 @@ export default function AdminLayout() {
     { path: "/admin/users", label: "Users", icon: Users },
     { path: "/admin/orders", label: "Orders", icon: ShoppingBag },
     { path: "/admin/products", label: "Products", icon: Package },
-    { path: "/admin/category", label: "Categories", icon: Package },
-    { path: "/admin/cancelled", label: "Cancelled", icon: MessageCircle },
+    { path: "/admin/category", label: "Categories", icon: Folder },
+    { path: "/admin/cancelled", label: "Cancelled", icon: MessageCircle },  
   ];
 
   const isActive = (path) => location.pathname === path;
