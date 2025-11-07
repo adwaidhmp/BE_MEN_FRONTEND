@@ -9,6 +9,8 @@ import {
   fetchAdminProductDetail,
   clearSelectedProduct,
 } from "../redux/slice/adminProductSlice";
+// Import the new categories slice
+import { fetchAdminCategories } from "../redux/slice/adminCategorySlice";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { 
@@ -36,6 +38,9 @@ export default function Products() {
     selectedProduct,
   } = useSelector((state) => state.adminProducts);
 
+  // Get categories from the new slice
+  const { categories: categoriesState } = useSelector((state) => state.adminCategory);
+
   // ----- Filters / Sort -----
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -45,8 +50,6 @@ export default function Products() {
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, product: null });
   const [detailModal, setDetailModal] = useState({ show: false, product: null });
   
-  // Add state for all categories
-  const [allCategories, setAllCategories] = useState([]);
   // Add state for form submission
   const [formError, setFormError] = useState("");
 
@@ -57,6 +60,9 @@ export default function Products() {
   const products = productsData?.results || [];
   const pagination = productsData || {};
 
+  // Extract categories from the new slice
+  const allCategories = categoriesState?.data?.results || [];
+
   // ----- Fetch products -----
   const fetchProducts = () => dispatch(fetchAdminProducts(params));
 
@@ -64,32 +70,9 @@ export default function Products() {
     fetchProducts();
   }, [search, categoryFilter, sort, currentPage]);
 
-  // Fetch all categories separately to populate dropdown
+  // Fetch all categories using the new slice
   useEffect(() => {
-    // Fetch all products without filters to get all categories
-    dispatch(fetchAdminProducts({}))
-      .unwrap()
-      .then((response) => {
-        const allProducts = response.results || [];
-        const uniqueCategories = {};
-        
-        allProducts.forEach((product) => {
-          if (product.category && product.category.id) {
-            uniqueCategories[product.category.id] = product.category.category;
-          }
-        });
-        
-        // Convert to array format for dropdown
-        const categoriesArray = Object.entries(uniqueCategories).map(([id, name]) => ({
-          id,
-          name
-        }));
-        
-        setAllCategories(categoriesArray);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch categories:", error);
-      });
+    dispatch(fetchAdminCategories());
   }, [dispatch]);
 
   // ----- Handlers -----
@@ -395,7 +378,7 @@ export default function Products() {
             <option value="">All Categories</option>
             {allCategories.map((category) => (
               <option key={category.id} value={category.id}>
-                {category.name}
+                {category.category} {/* Changed from category.name to category.category */}
               </option>
             ))}
           </select>
@@ -584,7 +567,7 @@ export default function Products() {
                       <option value="">Select Category</option>
                       {allCategories.map((category) => (
                         <option key={category.id} value={category.id}>
-                          {category.name}
+                          {category.category} {/* Changed from category.name to category.category */}
                         </option>
                       ))}
                     </Field>
