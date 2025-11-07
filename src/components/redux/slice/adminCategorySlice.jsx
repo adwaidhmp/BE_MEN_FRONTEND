@@ -11,6 +11,7 @@ export const fetchAdminCategories = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await adminapi.get("category/");
+      console.log(res.data)
       return res.data; // expects an array of categories
     } catch (err) {
       return rejectWithValue(err.response?.data || "Something went wrong");
