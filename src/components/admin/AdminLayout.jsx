@@ -25,6 +25,7 @@ export default function AdminLayout() {
     { path: "/admin/users", label: "Users", icon: Users },
     { path: "/admin/orders", label: "Orders", icon: ShoppingBag },
     { path: "/admin/products", label: "Products", icon: Package },
+    { path: "/admin/category", label: "Categories", icon: Package },
     { path: "/admin/cancelled", label: "Cancelled", icon: MessageCircle },
   ];
 

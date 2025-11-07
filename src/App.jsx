@@ -16,6 +16,7 @@ import NotificationComponent from './components/user/notification';
 import LoginRoute from './components/Routes/Loginroute'
 import ProtectedRoute from './components/Routes/protectedroutes'
 import AdminRoute from './components/Routes/AdminRoute'
+import Categories from './components/admin/AdmCategory';
 
 const Aboutus = lazy(() => import('./components/otherpages/aboutus'));
 const ProductDetails = lazy(() => import('./components/pages/ProductDetails'));
@@ -105,7 +106,9 @@ function App() {
           <Route path="users" element={<Suspense fallback={<Loader />}><Users /></Suspense>} />
           <Route path="orders" element={<Suspense fallback={<Loader />}><AdmOrders /></Suspense>} />
           <Route path="products" element={<Suspense fallback={<Loader />}><Products /></Suspense>} />
+          <Route path="category" element={<Suspense fallback={<Loader />}><Categories /></Suspense>} />
           <Route path="cancelled" element={<Suspense fallback={<Loader />}><CancelledOrdersPage /></Suspense>} />
+
         </Route>
 
         {/* USER ROUTES */}

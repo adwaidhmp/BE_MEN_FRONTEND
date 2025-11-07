@@ -8,6 +8,7 @@ import adminOrderReducer from "./slice/adminOrderSlice";
 import adminProductSlice from "./slice/adminProductSlice";
 import notificationReducer from "./slice/NotificationSlice";
 import adminCancelAndReturnReducer from "./slice/adminCancelAndReturnSlice"
+import adminCategoryReducer from "./slice/adminCategorySlice";
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -19,6 +20,7 @@ export const store = configureStore({
     adminProducts: adminProductSlice,
     notifications: notificationReducer,
     adminCancelAndReturn: adminCancelAndReturnReducer,
+    adminCategory: adminCategoryReducer,
   },
 });
 
