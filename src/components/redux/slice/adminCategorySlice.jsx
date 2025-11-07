@@ -171,9 +171,19 @@ const adminCategorySlice = createSlice({
             .addCase(createAdminCategory.fulfilled, (state, action) => {
                 state.operation.loading = false;
                 state.operation.success = "Category created successfully!";
-                state.categories.data.unshift(action.payload);
+
+                // ✅ Add new category to results array if exists
+                if (state.categories.data && Array.isArray(state.categories.data.results)) {
+                    state.categories.data.results.unshift(action.payload);
+                    state.categories.data.count += 1;
+                } else if (Array.isArray(state.categories.data)) {
+                    // fallback if it's a plain array (unlikely now)
+                    state.categories.data.unshift(action.payload);
+                }
+
                 toast.success("Category created successfully!");
             })
+
             .addCase(createAdminCategory.rejected, (state, action) => {
                 state.operation.loading = false;
                 state.operation.error = action.payload;
@@ -191,13 +201,24 @@ const adminCategorySlice = createSlice({
                 state.operation.loading = false;
                 state.operation.success = "Category updated successfully!";
 
-                const index = state.categories.data.findIndex(
-                    (cat) => cat.id === action.payload.id
-                );
-                if (index !== -1) {
-                    state.categories.data[index] = action.payload;
+                // ✅ Update inside results array
+                if (state.categories.data && Array.isArray(state.categories.data.results)) {
+                    const index = state.categories.data.results.findIndex(
+                        (cat) => cat.id === action.payload.id
+                    );
+                    if (index !== -1) {
+                        state.categories.data.results[index] = action.payload;
+                    }
+                } else if (Array.isArray(state.categories.data)) {
+                    const index = state.categories.data.findIndex(
+                        (cat) => cat.id === action.payload.id
+                    );
+                    if (index !== -1) {
+                        state.categories.data[index] = action.payload;
+                    }
                 }
 
+                // ✅ Update currentCategory if open
                 if (
                     state.currentCategory.data &&
                     state.currentCategory.data.id === action.payload.id
@@ -207,6 +228,7 @@ const adminCategorySlice = createSlice({
 
                 toast.success("Category updated successfully!");
             })
+
             .addCase(updateAdminCategory.rejected, (state, action) => {
                 state.operation.loading = false;
                 state.operation.error = action.payload;
@@ -223,10 +245,20 @@ const adminCategorySlice = createSlice({
             .addCase(deleteAdminCategory.fulfilled, (state, action) => {
                 state.operation.loading = false;
                 state.operation.success = "Category deleted successfully!";
-                state.categories.data = state.categories.data.filter(
-                    (cat) => cat.id !== action.payload
-                );
 
+                // ✅ Remove from results array if exists
+                if (state.categories.data && Array.isArray(state.categories.data.results)) {
+                    state.categories.data.results = state.categories.data.results.filter(
+                        (cat) => cat.id !== action.payload
+                    );
+                    state.categories.data.count -= 1;
+                } else if (Array.isArray(state.categories.data)) {
+                    state.categories.data = state.categories.data.filter(
+                        (cat) => cat.id !== action.payload
+                    );
+                }
+
+                // ✅ Clear current category if it matches deleted one
                 if (
                     state.currentCategory.data &&
                     state.currentCategory.data.id === action.payload
@@ -236,6 +268,7 @@ const adminCategorySlice = createSlice({
 
                 toast.success("Category deleted successfully!");
             })
+
             .addCase(deleteAdminCategory.rejected, (state, action) => {
                 state.operation.loading = false;
                 state.operation.error = action.payload;
