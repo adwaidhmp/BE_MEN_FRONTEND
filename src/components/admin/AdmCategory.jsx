@@ -26,6 +26,7 @@ export default function Categories() {
   } = useSelector((state) => state.adminCategory);
 
   const categories = categoriesState?.data?.results || [];
+  console.log(categories)
 
   // Fetch categories on mount
   useEffect(() => {
