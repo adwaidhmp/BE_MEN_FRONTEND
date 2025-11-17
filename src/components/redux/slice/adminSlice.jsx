@@ -11,7 +11,8 @@ export const fetchAdminDashboard = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await adminapi.get("dashboard/");
-      return res.data;
+      console.log(res.data);
+      return res.data; 
     } catch (err) {
       return rejectWithValue(err.response?.data || "Something went wrong");
     }
