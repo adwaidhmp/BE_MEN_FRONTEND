@@ -51,7 +51,7 @@ const unreadCount = notifications?.filter(n => !n.read)?.length || 0;
             </div>
 
             {/* Navigation Links */}
-            <div className="flex items-center space-x-4 lg:space-x-6">
+            <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4 lg:space-x-6">
               {/* Products */}
               {location.pathname !== "/home" && (
                 <Link
