@@ -1,54 +1,23 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../api";
 import { toast } from "react-toastify";
-import { fetchCart,resetCart } from "./cartSlice";         
-import { fetchWishlist,resetWishlist } from "./wishlistSlice"; 
-import { fetchNotifications } from "./NotificationSlice";
+import { resetCart } from "./cartSlice";         
+import { resetWishlist } from "./wishlistSlice"; 
+
 
 
 //  LOGIN
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
-  async ({ email, password }, { dispatch, rejectWithValue }) => {
+  async ({ email, password,  }, {dispatch, rejectWithValue }) => {
     try {
       const res = await api.post("login/", { email, password });
-
-      // detect token and user shape (adjust if your backend differs)
-      const token = res.data?.token ?? res.data?.access ?? res.data?.key ?? null;
-      const user = res.data?.user ?? res.data ?? null;
-
-      // If token exists, set axios header and persist it
-      if (token) {
-        // if your backend expects `Token <token>` (DRF TokenAuth) use `Token ${token}`
-        // if it expects JWT Bearer use `Bearer ${token}`
-        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        localStorage.setItem("authToken", token);
-      }
-
-      // set user in redux
+      const user = res.data.user || res.data;
+      console.log(user)
       dispatch(setUser(user));
-
-      // Now fetch dependent resources — unwrap so we get thrown errors if any
-      // We do them sequentially to make debugging easier; you can parallelize if desired.
-      try {
-        await dispatch(fetchCart()).unwrap();
-      } catch (err) {
-        console.error("fetchCart failed after login:", err);
-      }
-
-      try {
-        await dispatch(fetchWishlist()).unwrap();
-      } catch (err) {
-        console.error("fetchWishlist failed after login:", err);
-      }
-
-      try {
-        await dispatch(fetchNotifications()).unwrap();
-      } catch (err) {
-        console.error("fetchNotifications failed after login:", err);
-      }
-
+      
       toast.success("Login successful!");
+      console.log(user)
       return user;
     } catch (err) {
       const message = err.response?.data?.detail || "Login failed";

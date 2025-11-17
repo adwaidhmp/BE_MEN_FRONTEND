@@ -6,6 +6,8 @@ import Footer from "../otherpages/footer";
 import { addToCart, fetchCart } from "../redux/slice/cartSlice";
 import { toast } from "react-toastify";
 import { fetchAdminCategories } from "../redux/slice/adminCategorySlice"
+import {fetchWishlist} from "../redux/slice/wishlistSlice"
+import {fetchNotifications } from "../redux/slice/NotificationSlice"
 
 function Homepage() {
   const [products, setProducts] = useState([]);
@@ -89,6 +91,8 @@ function Homepage() {
     }
     fetchProducts();
     dispatch(fetchCart());
+    dispatch(fetchWishlist());
+    dispatch(fetchNotifications());
   }, [currentPage, selectedCategory, priceSort, searchQuery, dispatch]);
 
   return (
