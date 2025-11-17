@@ -85,7 +85,7 @@ export default function NotificationComponent() {
 
   if (!notifications.length) {
     return (
-      <div className="min-h-64 flex flex-col items-center justify-center p-8 text-center">
+      <div className="min-h-64 flex flex-col items-center justify-center p-12 text-center">
         <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mb-4">
           <Bell className="w-8 h-8 text-stone-400" />
         </div>
