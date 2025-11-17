@@ -154,6 +154,7 @@ export default function Categories() {
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-stone-900 text-amber-50">
               <tr>
@@ -197,6 +198,7 @@ export default function Categories() {
               ))}
             </tbody>
           </table>
+        </div>
         </div>
       )}
 
