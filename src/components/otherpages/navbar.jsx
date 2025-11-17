@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import Profile from "../user/profile";
-import { Heart, ShoppingCart, User, ShoppingBag, Info, Crown, Bell } from "lucide-react";
+import { Heart, ShoppingCart, User, Home , Info, Crown, Bell } from "lucide-react";
 import { selectNotifications } from "../redux/slice/NotificationSlice";
 
 function Navbar() {
@@ -59,9 +59,9 @@ const unreadCount = notifications?.filter(n => !n.read)?.length || 0;
                   className="flex items-center gap-2 hover:text-amber-200 transition-colors group relative"
                 >
                   <div className="p-2 rounded-lg group-hover:bg-stone-800/50 transition-colors">
-                    <ShoppingBag className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    <Home className="w-4 h-4 group-hover:scale-110 transition-transform" />
                   </div>
-                  <span className="hidden sm:inline font-medium text-sm">Collection</span>
+                  <span className="hidden sm:inline font-medium text-sm"></span>
                 </Link>
               )}
 
