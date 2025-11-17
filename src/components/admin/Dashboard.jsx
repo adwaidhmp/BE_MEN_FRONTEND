@@ -69,7 +69,7 @@ export default function Dashboard() {
 
   // --- Chart Data from Backend ---
   const weeklyRevenueComparisonData = (data.weekly_revenue_chart || []).map(item => ({
-    week: `Week ${item.week}`,
+    week: `Week ${item.week_number}`,
     revenue: parseFloat(item.revenue) || 0
   }));
 
@@ -99,20 +99,16 @@ export default function Dashboard() {
 
   const revenueData = getRevenueData();
 
-  // Weekly Performance Data
-  const weeklyPerformanceData = [
-    { day: "Mon", orders: data.weekly_orders * 0.15 || 0, revenue: parseFloat(data.weekly_revenue) * 0.15 || 0 },
-    { day: "Tue", orders: data.weekly_orders * 0.12 || 0, revenue: parseFloat(data.weekly_revenue) * 0.12 || 0 },
-    { day: "Wed", orders: data.weekly_orders * 0.18 || 0, revenue: parseFloat(data.weekly_revenue) * 0.18 || 0 },
-    { day: "Thu", orders: data.weekly_orders * 0.14 || 0, revenue: parseFloat(data.weekly_revenue) * 0.14 || 0 },
-    { day: "Fri", orders: data.weekly_orders * 0.2 || 0, revenue: parseFloat(data.weekly_revenue) * 0.2 || 0 },
-    { day: "Sat", orders: data.weekly_orders * 0.16 || 0, revenue: parseFloat(data.weekly_revenue) * 0.16 || 0 },
-    { day: "Sun", orders: data.weekly_orders * 0.05 || 0, revenue: parseFloat(data.weekly_revenue) * 0.05 || 0 },
-  ];
+  // Weekly Performance Data - using actual weekly data from backend
+  const weeklyPerformanceData = (data.weekly_revenue_chart || []).map((item, index) => ({
+    day: `W${item.week_number}`,
+    orders: Math.round((data.weekly_orders || 0) * (0.1 + (index * 0.05))), // Simulated distribution
+    revenue: parseFloat(item.revenue) || 0
+  }));
 
   // Sales by Category with filter and sorting
   const getFilteredCategoryData = () => {
-    let filteredData = [...(data.sales_by_category || [])];
+    let filteredData = [...(data.category_sales || [])];
     
     // Apply filter
     if (categoryFilter === "top") {
@@ -127,8 +123,8 @@ export default function Dashboard() {
     // "all" shows all categories without sorting
     
     return filteredData.map((item, index) => ({
-      name: item.category,
-      value: parseFloat(item.total),
+      name: item['product__category__category'] || 'Uncategorized',
+      value: parseFloat(item.total) || 0,
       color: COLORS[index % COLORS.length]
     }));
   };
@@ -179,7 +175,7 @@ export default function Dashboard() {
   const todayStatCards = [
     { 
       title: "Today's Revenue", 
-      value: formatCurrency(data.todays_revenue), 
+      value: formatCurrency(data.revenue_today), 
       icon: TrendingUp, 
       color: "text-green-600",
       bgColor: "bg-green-50",
@@ -187,7 +183,7 @@ export default function Dashboard() {
     },
     { 
       title: "Today's Orders", 
-      value: data.todays_orders || 0, 
+      value: data.orders_today || 0, 
       icon: ShoppingBag, 
       color: "text-amber-600",
       bgColor: "bg-amber-50",
@@ -199,7 +195,7 @@ export default function Dashboard() {
   const orderStatusCards = [
     { 
       title: "Orders Pending", 
-      value: data.orders_pending || 0, 
+      value: data.pending_orders || 0, 
       icon: Clock, 
       color: "text-amber-600",
       bgColor: "bg-amber-50",
@@ -207,7 +203,7 @@ export default function Dashboard() {
     },
     { 
       title: "Orders Shipped", 
-      value: data.orders_shipped || 0, 
+      value: data.shipped_orders || 0, 
       icon: Truck, 
       color: "text-blue-600",
       bgColor: "bg-blue-50",
@@ -215,7 +211,7 @@ export default function Dashboard() {
     },
     { 
       title: "Orders Delivered", 
-      value: data.orders_delivered || 0, 
+      value: data.delivered_orders || 0, 
       icon: CheckCircle, 
       color: "text-green-600",
       bgColor: "bg-green-50",
@@ -223,7 +219,7 @@ export default function Dashboard() {
     },
     { 
       title: "Orders Cancelled", 
-      value: data.orders_cancelled || 0, 
+      value: data.cancelled_orders || 0, 
       icon: XCircle, 
       color: "text-red-600",
       bgColor: "bg-red-50",
@@ -523,7 +519,6 @@ export default function Dashboard() {
 }
 
 // --- Helper Components ---
-// eslint-disable-next-line no-unused-vars
 const StatCard = ({ title, value, description, icon: Icon, color, bgColor, borderColor, compact = false }) => (
   <div className={`bg-white rounded-xl border ${borderColor} p-6 hover:shadow-lg transition-all ${compact ? 'text-center' : ''}`}>
     <div className={`flex items-center ${compact ? 'justify-center' : 'justify-between'} mb-4`}>

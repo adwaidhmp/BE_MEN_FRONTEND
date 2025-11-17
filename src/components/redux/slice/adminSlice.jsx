@@ -11,7 +11,6 @@ export const fetchAdminDashboard = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await adminapi.get("dashboard/");
-      console.log(res.data)
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || "Something went wrong");
@@ -25,9 +24,10 @@ export const fetchAdminUsers = createAsyncThunk(
   async (params = {}, { rejectWithValue }) => {
     try {
       const { page = 1, page_size = 10, search = "" } = params;
-      const res = await adminapi.get(`users/?page=${page}&page_size=${page_size}&search=${search}`);
-      console.log("res.data :", res.data);
-      return res.data; // Return full pagination response, not just results
+      const res = await adminapi.get(
+        `users/?page=${page}&page_size=${page_size}&search=${search}`
+      );
+      return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || "Something went wrong");
     }
@@ -80,12 +80,16 @@ const adminSlice = createSlice({
         monthly_revenue: 0,
         yearly_revenue: 0,
         category_sales: [],
+        // charts (ensure presence)
+        monthly_revenue_chart: [],
+        weekly_revenue_chart: [],
+        yearly_revenue_chart: [],
       },
     },
     users: {
       loading: false,
       error: null,
-      data: null, // Change from [] to null initially
+      data: null,
       selectedUser: null,
       banStatus: null,
     },
@@ -120,11 +124,51 @@ const adminSlice = createSlice({
       })
       .addCase(fetchAdminDashboard.fulfilled, (state, action) => {
         state.dashboard.loading = false;
-        state.dashboard.data = action.payload;
+
+        // Normalize API payload to UI-friendly keys (safe defaults)
+        const p = action.payload || {};
+
+        // map API keys to state keys; keep types predictable
+        state.dashboard.data = {
+          total_revenue: Number(p.total_revenue ?? p.totalRevenue ?? 0),
+          total_orders: Number(p.total_orders ?? p.total_orders ?? 0),
+          total_users: Number(p.total_users ?? 0),
+          total_products: Number(p.total_products ?? 0),
+
+          // order status counts (API uses orders_pending etc.)
+          pending_orders: Number(p.orders_pending ?? p.pending_orders ?? 0),
+          delivered_orders: Number(p.orders_delivered ?? p.delivered_orders ?? 0),
+          cancelled_orders: Number(p.orders_cancelled ?? 0),
+          shipped_orders: Number(p.orders_shipped ?? 0),
+
+          // today / period numbers (map names)
+          revenue_today: Number(p.todays_revenue ?? p.revenue_today ?? 0),
+          orders_today: Number(p.todays_orders ?? p.orders_today ?? 0),
+          weekly_revenue: Number(p.weekly_revenue ?? 0),
+          monthly_revenue: Number(p.monthly_revenue ?? 0),
+          yearly_revenue: Number(p.yearly_revenue ?? 0),
+
+          // category / charts
+          category_sales: Array.isArray(p.sales_by_category || p.category_sales)
+            ? (p.sales_by_category || p.category_sales)
+            : [],
+          monthly_revenue_chart: Array.isArray(p.monthly_revenue_chart)
+            ? p.monthly_revenue_chart
+            : [],
+          weekly_revenue_chart: Array.isArray(p.weekly_revenue_chart)
+            ? p.weekly_revenue_chart
+            : [],
+          yearly_revenue_chart: Array.isArray(p.yearly_revenue_chart)
+            ? p.yearly_revenue_chart
+            : [],
+        };
       })
       .addCase(fetchAdminDashboard.rejected, (state, action) => {
         state.dashboard.loading = false;
         state.dashboard.error = action.payload;
+        toast.error(
+          (action.payload && action.payload.detail) || action.payload || "Failed to load dashboard"
+        );
       });
 
     // --- Users ---
@@ -136,7 +180,7 @@ const adminSlice = createSlice({
       })
       .addCase(fetchAdminUsers.fulfilled, (state, action) => {
         state.users.loading = false;
-        state.users.data = action.payload; // Store the entire pagination response
+        state.users.data = action.payload; // pagination response
       })
       .addCase(fetchAdminUsers.rejected, (state, action) => {
         state.users.loading = false;
@@ -165,14 +209,15 @@ const adminSlice = createSlice({
         state.users.loading = false;
         state.users.banStatus = action.payload.message;
 
-        // Update the user in users list
+        // Update the user in users list (if exists)
         if (state.users.data && state.users.data.results) {
-          const idx = state.users.data.results.findIndex(u => u.id === action.payload.userId);
+          const idx = state.users.data.results.findIndex(
+            (u) => u.id === action.payload.userId
+          );
           if (idx !== -1) {
             const wasBanned = state.users.data.results[idx].is_banned;
             state.users.data.results[idx].is_banned = !wasBanned;
 
-            // Show toast message for ban/unban
             if (wasBanned) {
               toast.success("User unbanned successfully!");
             } else {
@@ -194,5 +239,6 @@ const adminSlice = createSlice({
   },
 });
 
-export const { clearAdminDashboardError, clearAdminUsersError, clearSelectedUser } = adminSlice.actions;
+export const { clearAdminDashboardError, clearAdminUsersError, clearSelectedUser } =
+  adminSlice.actions;
 export default adminSlice.reducer;
