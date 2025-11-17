@@ -67,19 +67,19 @@ export default function Dashboard() {
     }).format(parseFloat(value || 0));
   };
 
-  // --- Chart Data from Backend ---
+  // --- UPDATED Chart Data from Backend ---
   const weeklyRevenueComparisonData = (data.weekly_revenue_chart || []).map(item => ({
-    week: `Week ${item.week}`,
+    period: item.label, // Use the label from backend "Nov 03 - Nov 09"
     revenue: parseFloat(item.revenue) || 0
   }));
 
   const monthlyRevenueComparisonData = (data.monthly_revenue_chart || []).map(item => ({
-    month: item.month,
+    period: item.month.substring(0, 3), // Show "Jan", "Feb", etc.
     revenue: parseFloat(item.revenue) || 0
   }));
 
   const yearlyRevenueComparisonData = (data.yearly_revenue_chart || []).map(item => ({
-    year: item.year.toString(),
+    period: item.year.toString(),
     revenue: parseFloat(item.revenue) || 0
   }));
 
@@ -110,7 +110,7 @@ export default function Dashboard() {
     { day: "Sun", orders: data.weekly_orders * 0.05 || 0, revenue: parseFloat(data.weekly_revenue) * 0.05 || 0 },
   ];
 
-  // Sales by Category with filter and sorting
+  // Sales by Category with filter and sorting - UPDATED
   const getFilteredCategoryData = () => {
     let filteredData = [...(data.sales_by_category || [])];
     
@@ -127,7 +127,7 @@ export default function Dashboard() {
     // "all" shows all categories without sorting
     
     return filteredData.map((item, index) => ({
-      name: item.category,
+      name: item.product__category__category, // Updated to match backend field
       value: parseFloat(item.total),
       color: COLORS[index % COLORS.length]
     }));
@@ -290,9 +290,16 @@ export default function Dashboard() {
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Combined Revenue Chart */}
+        {/* UPDATED: Combined Revenue Chart */}
         <ChartCard title="Revenue Analysis" className="lg:col-span-2">
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <p className="text-sm text-stone-600">
+                Total: {formatCurrency(
+                  revenueData.reduce((sum, item) => sum + item.revenue, 0)
+                )}
+              </p>
+            </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setTimeFilter("weekly")}
@@ -326,36 +333,44 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={revenueData}>
-              <XAxis 
-                dataKey={timeFilter === "weekly" ? "week" : timeFilter === "monthly" ? "month" : "year"} 
-                stroke="#57534e" 
-              />
-              <YAxis 
-                stroke="#57534e" 
-                tickFormatter={(value) => 
-                  timeFilter === "yearly" 
-                    ? `$${(value / 1000000).toFixed(1)}M`
-                    : `$${(value / 1000).toFixed(0)}k`
-                }
-              />
-              <Tooltip 
-                formatter={(value) => [formatCurrency(value), 'Revenue']}
-                contentStyle={{ 
-                  backgroundColor: '#fff',
-                  border: '1px solid #d6d3d1',
-                  borderRadius: '8px'
-                }}
-              />
-              <Bar 
-                dataKey="revenue" 
-                fill="#b45309" 
-                radius={[4, 4, 0, 0]}
-                name="Revenue"
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          
+          {revenueData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={revenueData}>
+                <XAxis 
+                  dataKey="period" 
+                  stroke="#57534e" 
+                />
+                <YAxis 
+                  stroke="#57534e" 
+                  tickFormatter={(value) => {
+                    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+                    if (value >= 1000) return `$${(value / 1000).toFixed(0)}k`;
+                    return `$${value}`;
+                  }}
+                />
+                <Tooltip 
+                  formatter={(value) => [formatCurrency(value), 'Revenue']}
+                  labelFormatter={(label) => `Period: ${label}`}
+                  contentStyle={{ 
+                    backgroundColor: '#fff',
+                    border: '1px solid #d6d3d1',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Bar 
+                  dataKey="revenue" 
+                  fill="#b45309" 
+                  radius={[4, 4, 0, 0]}
+                  name="Revenue"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-64 text-stone-500">
+              No revenue data available for the selected period
+            </div>
+          )}
         </ChartCard>
 
         {/* Sales by Category Pie Chart */}
