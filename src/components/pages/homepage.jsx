@@ -21,31 +21,30 @@ function Homepage() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-  dispatch(fetchAdminCategories());
+    dispatch(fetchAdminCategories());
   }, [dispatch]);
 
   const user = useSelector((state) => state.auth.user);
   const { cart } = useSelector((state) => state.cart);
   const { data: categoryData } = useSelector((state) => state.adminCategory.categories);
-  console.log("raw categories:", categoryData);
-const rawCats = categoryData?.results ?? (Array.isArray(categoryData) ? categoryData : []);
+  const rawCats = categoryData?.results ?? (Array.isArray(categoryData) ? categoryData : []);
 
-// build categories safely
-const categories = [
-  { value: "all", label: "All Products" },
-  ...rawCats.map((cat) => {
-    const id = cat?.id ?? Math.random().toString(36).slice(2, 9);
-    // prefer slug, then name, then `category` field, then fallback text
-    const label = String(cat?.name ?? cat?.category ?? cat?.title ?? `Category ${id}`).trim();
-    // prefer explicit slug, otherwise create from label (safe toLowerCase on guaranteed string)
-    const slug = cat?.slug || label.toLowerCase().replace(/\s+/g, "-");
-    return {
-      id,
-      value: slug,   // or use id if your products endpoint expects category id
-      label
-    };
-  }),
-];
+  // build categories safely
+  const categories = [
+    { value: "all", label: "All Products" },
+    ...rawCats.map((cat) => {
+      const id = cat?.id ?? Math.random().toString(36).slice(2, 9);
+      // prefer slug, then name, then `category` field, then fallback text
+      const label = String(cat?.name ?? cat?.category ?? cat?.title ?? `Category ${id}`).trim();
+      // prefer explicit slug, otherwise create from label (safe toLowerCase on guaranteed string)
+      const slug = cat?.slug || label.toLowerCase().replace(/\s+/g, "-");
+      return {
+        id,
+        value: slug,   // or use id if your products endpoint expects category id
+        label
+      };
+    }),
+  ];
 
 
   const getStockDisplay = (stock) => {
@@ -137,8 +136,8 @@ const categories = [
                   key={cat.value}
                   onClick={() => { setSelectedCategory(cat.value); setCurrentPage(1); }}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedCategory === cat.value
-                      ? "bg-stone-900 text-amber-50"
-                      : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+                    ? "bg-stone-900 text-amber-50"
+                    : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
                     }`}
                 >
                   {cat.label}
@@ -166,8 +165,8 @@ const categories = [
                   key={cat.value}
                   onClick={() => { setSelectedCategory(cat.value); setCurrentPage(1); }}
                   className={`px-3 py-2 rounded text-sm font-medium transition-all ${selectedCategory === cat.value
-                      ? "bg-stone-900 text-amber-50"
-                      : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+                    ? "bg-stone-900 text-amber-50"
+                    : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
                     }`}
                 >
                   {cat.label}
@@ -242,10 +241,10 @@ const categories = [
                           }
                         }}
                         className={`flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${isInCart
-                            ? "bg-stone-900 text-amber-50 hover:bg-stone-800"
-                            : product.product_stock === 0
-                              ? "bg-stone-100 text-stone-400"
-                              : "bg-amber-600 text-white hover:bg-amber-700"
+                          ? "bg-stone-900 text-amber-50 hover:bg-stone-800"
+                          : product.product_stock === 0
+                            ? "bg-stone-100 text-stone-400"
+                            : "bg-amber-600 text-white hover:bg-amber-700"
                           }`}
                       >
                         {isInCart ? (
@@ -278,8 +277,8 @@ const categories = [
               key={i + 1}
               onClick={() => setCurrentPage(i + 1)}
               className={`px-4 py-2 border rounded-lg ${currentPage === i + 1
-                  ? "bg-stone-900 text-amber-50"
-                  : "bg-white text-stone-900 hover:bg-stone-100"
+                ? "bg-stone-900 text-amber-50"
+                : "bg-white text-stone-900 hover:bg-stone-100"
                 }`}
             >
               {i + 1}
