@@ -80,22 +80,22 @@ export default function Users() {
   // Generate page numbers for pagination
   const generatePageNumbers = () => {
     if (!pagination.count) return [];
-    
+
     const totalPages = Math.ceil(pagination.count / (pagination.page_size || 10));
     const pages = [];
     const maxVisiblePages = 5;
-    
+
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-    
+
     return pages;
   };
 
@@ -125,7 +125,7 @@ export default function Users() {
               className="w-full pl-10 pr-4 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors bg-white"
             />
           </div>
-          
+
           {/* Results Count */}
           {pagination.count !== undefined && (
             <div className="text-sm text-stone-600 whitespace-nowrap">
@@ -144,7 +144,7 @@ export default function Users() {
           </div>
         </div>
       )}
-      
+
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <p className="text-red-700 font-medium">{error}</p>
@@ -162,89 +162,89 @@ export default function Users() {
         </div>
       ) : (
         <div className={`bg-white rounded-xl border border-stone-200  ${selectedUser ? 'blur-sm' : ''}`}>
-          <table className="w-full">
-            <thead className="bg-stone-900 text-amber-50">
-              <tr>
-                <th className="px-6 py-4 text-left font-medium">User</th>
-                <th className="px-6 py-4 text-left font-medium">Contact</th>
-                <th className="px-6 py-4 text-left font-medium">Status</th>
-                <th className="px-6 py-4 text-left font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-200">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-stone-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center border border-stone-200">
-                        <User className="w-4 h-4 text-stone-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-stone-900">{user.name}</p>
-                        <p className="text-sm text-stone-500 font-light">ID: {user.id}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      <p className="text-stone-900 flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-stone-400" />
-                        {user.email}
-                      </p>
-                      {user.phone_number && (
-                        <p className="text-sm text-stone-500 flex items-center gap-2">
-                          <Phone className="w-3 h-3 text-stone-400" />
-                          {user.phone_number}
-                        </p>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
-                      user.is_banned 
-                        ? "bg-red-100 text-red-700 border border-red-200" 
-                        : "bg-green-100 text-green-700 border border-green-200"
-                    }`}>
-                      <Shield className="w-3 h-3" />
-                      {user.is_banned ? "Banned" : "Active"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleBanToggle(user.id)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-sm transition-all border ${
-                          user.is_banned 
-                            ? "bg-green-600 text-white border-green-600 hover:bg-green-700" 
-                            : "bg-red-600 text-white border-red-600 hover:bg-red-700"
-                        }`}
-                      >
-                        {user.is_banned ? (
-                          <>
-                            <CheckCircle size={14} />
-                            Unban
-                          </>
-                        ) : (
-                          <>
-                            <Ban size={14} />
-                            Ban
-                          </>
-                        )}
-                      </button>
-
-                      <button
-                        onClick={() => handleViewDetails(user.id)}
-                        className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-sm bg-stone-900 text-amber-50 hover:bg-stone-800 transition-all border border-stone-900"
-                      >
-                        <Eye size={14} />
-                        Details
-                      </button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-stone-900 text-amber-50">
+                <tr>
+                  <th className="px-6 py-4 text-left font-medium">User</th>
+                  <th className="px-6 py-4 text-left font-medium">Contact</th>
+                  <th className="px-6 py-4 text-left font-medium">Status</th>
+                  <th className="px-6 py-4 text-left font-medium">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-stone-200">
+                {users.map((user) => (
+                  <tr key={user.id} className="hover:bg-stone-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center border border-stone-200">
+                          <User className="w-4 h-4 text-stone-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-stone-900">{user.name}</p>
+                          <p className="text-sm text-stone-500 font-light">ID: {user.id}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        <p className="text-stone-900 flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-stone-400" />
+                          {user.email}
+                        </p>
+                        {user.phone_number && (
+                          <p className="text-sm text-stone-500 flex items-center gap-2">
+                            <Phone className="w-3 h-3 text-stone-400" />
+                            {user.phone_number}
+                          </p>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${user.is_banned
+                          ? "bg-red-100 text-red-700 border border-red-200"
+                          : "bg-green-100 text-green-700 border border-green-200"
+                        }`}>
+                        <Shield className="w-3 h-3" />
+                        {user.is_banned ? "Banned" : "Active"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleBanToggle(user.id)}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-sm transition-all border ${user.is_banned
+                              ? "bg-green-600 text-white border-green-600 hover:bg-green-700"
+                              : "bg-red-600 text-white border-red-600 hover:bg-red-700"
+                            }`}
+                        >
+                          {user.is_banned ? (
+                            <>
+                              <CheckCircle size={14} />
+                              Unban
+                            </>
+                          ) : (
+                            <>
+                              <Ban size={14} />
+                              Ban
+                            </>
+                          )}
+                        </button>
+
+                        <button
+                          onClick={() => handleViewDetails(user.id)}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-sm bg-stone-900 text-amber-50 hover:bg-stone-800 transition-all border border-stone-900"
+                        >
+                          <Eye size={14} />
+                          Details
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {/* Pagination */}
           {pagination.count > 0 && (
@@ -255,7 +255,7 @@ export default function Users() {
                   {Math.min(currentPage * (pagination.page_size || 10), pagination.count)} of{" "}
                   {pagination.count} users
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   {/* Previous Button */}
                   <button
@@ -272,11 +272,10 @@ export default function Users() {
                     <button
                       key={page}
                       onClick={() => handlePageClick(page)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
-                        currentPage === page
+                      className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all ${currentPage === page
                           ? "bg-amber-600 text-white border-amber-600"
                           : "border-stone-300 text-stone-700 hover:bg-stone-50"
-                      }`}
+                        }`}
                     >
                       {page}
                     </button>
@@ -356,11 +355,10 @@ export default function Users() {
                   <Shield className="w-5 h-5 text-amber-600" />
                   <div>
                     <p className="text-sm text-stone-500 font-light">Status</p>
-                    <span className={`inline-flex items-center gap-1 px-3 py-2 rounded-full text-sm font-medium ${
-                      selectedUser.is_banned 
-                        ? "bg-red-100 text-red-700 border border-red-200" 
+                    <span className={`inline-flex items-center gap-1 px-3 py-2 rounded-full text-sm font-medium ${selectedUser.is_banned
+                        ? "bg-red-100 text-red-700 border border-red-200"
                         : "bg-green-100 text-green-700 border border-green-200"
-                    }`}>
+                      }`}>
                       {selectedUser.is_banned ? "Banned" : "Active"}
                     </span>
                   </div>
@@ -372,11 +370,10 @@ export default function Users() {
             <div className="flex gap-3 p-6 border-t border-stone-200">
               <button
                 onClick={() => handleBanToggle(selectedUser.id)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-medium transition-all border ${
-                  selectedUser.is_banned 
-                    ? "bg-green-600 text-white border-green-600 hover:bg-green-700" 
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-medium transition-all border ${selectedUser.is_banned
+                    ? "bg-green-600 text-white border-green-600 hover:bg-green-700"
                     : "bg-red-600 text-white border-red-600 hover:bg-red-700"
-                }`}
+                  }`}
               >
                 {selectedUser.is_banned ? (
                   <>
