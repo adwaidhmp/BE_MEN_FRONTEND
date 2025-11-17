@@ -5,6 +5,7 @@ import { Search, Filter, Clock, ArrowRight } from "lucide-react";
 import Footer from "../otherpages/footer";
 import { addToCart, fetchCart } from "../redux/slice/cartSlice";
 import { toast } from "react-toastify";
+import { fetchAdminCategories } from "../redux/slice/adminCategorySlice"
 
 function Homepage() {
   const [products, setProducts] = useState([]);
@@ -19,17 +20,24 @@ function Homepage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  useEffect(() => {
+  dispatch(fetchAdminCategories());
+  }, [dispatch]);
+
   const user = useSelector((state) => state.auth.user);
   const { cart } = useSelector((state) => state.cart);
+  const { data: categoryData, loading: categoryLoading } =
+  useSelector((state) => state.adminCategory.categories);
 
   const categories = [
-    { value: "all", label: "All Products" },
-    { value: "sunglass", label: "Sunglasses" },
-    { value: "watch", label: "Watches" },
-    { value: "perfume", label: "Perfumes" },
-    { value: "cap", label: "Caps" },
-    { value: "wallet", label: "Wallets" },
-  ];
+  { value: "all", label: "All Products" },
+
+  ...(categoryData?.results?.map((cat) => ({
+    value: cat.slug || cat.name.toLowerCase(),
+    label: cat.name,
+  })) || [])
+];
+
 
   const getStockDisplay = (stock) => {
     if (stock === 0) return { text: "Out of Stock", color: "text-red-700 border-red-200" };
