@@ -93,7 +93,7 @@ const unreadCount = notifications?.filter(n => !n.read)?.length || 0;
                     </span>
                   )}
                 </div>
-                <span className="hidden sm:inline font-medium text-sm">Wishlist</span>
+                <span className="hidden sm:inline font-medium text-sm"></span>
               </Link>
 
               {/* Cart */}
@@ -109,7 +109,7 @@ const unreadCount = notifications?.filter(n => !n.read)?.length || 0;
                     </span>
                   )}
                 </div>
-                <span className="hidden sm:inline font-medium text-sm">Cart</span>
+                <span className="hidden sm:inline font-medium text-sm"></span>
               </Link>
 
               {/* About Us */}
@@ -120,7 +120,7 @@ const unreadCount = notifications?.filter(n => !n.read)?.length || 0;
                 <div className="p-2 rounded-lg group-hover:bg-stone-800/50 transition-colors">
                   <Info className="w-4 h-4 group-hover:scale-110 transition-transform" />
                 </div>
-                <span className="hidden sm:inline font-medium text-sm">Story</span>
+                <span className="hidden sm:inline font-medium text-sm"></span>
               </Link>
 
               {/* Divider */}
@@ -135,7 +135,7 @@ const unreadCount = notifications?.filter(n => !n.read)?.length || 0;
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-stone-700 to-stone-600 flex items-center justify-center group-hover:from-stone-600 group-hover:to-stone-500 transition-all border border-stone-600">
                     <User className="w-4 h-4" />
                   </div>
-                  <span className="hidden lg:inline font-medium text-sm">Profile</span>
+                  <span className="hidden lg:inline font-medium text-sm"></span>
                 </button>
               ) : (
                 <Link
