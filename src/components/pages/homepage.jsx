@@ -26,9 +26,8 @@ function Homepage() {
 
   const user = useSelector((state) => state.auth.user);
   const { cart } = useSelector((state) => state.cart);
-  const { data: categoryData, loading: categoryLoading } =
-  useSelector((state) => state.adminCategory.categories);
-
+  const { data: categoryData } = useSelector((state) => state.adminCategory.categories);
+  console.log("raw categories:", categoryData);
   const categories = [
   { value: "all", label: "All Products" },
 
