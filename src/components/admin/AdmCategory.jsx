@@ -101,20 +101,21 @@ export default function Categories() {
       </div>
 
       {/* Actions Bar */}
-      <div className="bg-white rounded-xl border border-stone-200 p-6 mb-6">
-        <div className="flex justify-between items-center">
-          <div className="text-sm text-stone-600">
-            {categories.length} categor{categories.length !== 1 ? 'ies' : 'y'}
-          </div>
-          <button
-            onClick={handleAddNew}
-            className="flex items-center gap-2 px-4 py-3 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            Add Category
-          </button>
-        </div>
-      </div>
+      <div className="bg-white rounded-xl border border-stone-200 p-4 sm:p-6 mb-6">
+  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+    <div className="text-xs sm:text-sm text-stone-600">
+      {categories.length} categor{categories.length !== 1 ? 'ies' : 'y'}
+    </div>
+    <button
+      onClick={handleAddNew}
+      className="flex items-center justify-center gap-2 px-3 py-2 sm:px-4 sm:py-3 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 transition-all text-sm sm:text-base w-full sm:w-auto"
+    >
+      <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+      <span className="sm:hidden">Add</span>
+      <span className="hidden sm:inline">Add Category</span>
+    </button>
+  </div>
+</div>
 
       {/* Operation Status Messages */}
       {operation.loading && (
