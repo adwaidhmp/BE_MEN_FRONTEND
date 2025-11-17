@@ -42,7 +42,7 @@ const unreadCount = notifications?.filter(n => !n.read)?.length || 0;
                   <Crown className="w-4 h-4 text-white" />
                 </div>
                 <div className="text-left">
-                  <div className="font-serif text-xl tracking-wide">BE MEN</div>
+                  <div className="font-serif text-l tracking-wide">BE MEN</div>
                   <div className="text-xs text-amber-200/70 tracking-widest font-light">
                     COLLECTION
                   </div>
