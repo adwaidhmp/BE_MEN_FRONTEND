@@ -254,7 +254,7 @@ function OrderDetailPage() {
                 <div className="w-24 h-24 bg-stone-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-stone-200">
                   {order.product?.product_image ? (
                     <img
-                      src={`http://127.0.0.1:8000${order.product.product_image}`}
+                      src={`https://bemen.duckdns.org${order.product.product_image}`}
                       alt={order.product?.name || "Product"}
                       className="w-full h-full object-cover"
                     />
