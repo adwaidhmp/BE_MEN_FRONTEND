@@ -68,36 +68,34 @@ export default function Dashboard() {
   };
 
   // --- Chart Data from Backend ---
-  const weeklyRevenueComparisonData = (data.weekly_revenue_chart || []).map(item => ({
-    week: `Week ${item.week}`,
-    revenue: parseFloat(item.revenue) || 0
+  // normalize backend chart payloads
+  const weeklyRevenueComparisonData = (data.weekly_revenue_chart || []).map((item) => ({
+    name: item.label || `${item.week_start?.slice(0,10) || ''} - ${item.week_end?.slice(0,10) || ''}`,
+    revenue: Number(item.revenue || 0),
   }));
 
-  const monthlyRevenueComparisonData = (data.monthly_revenue_chart || []).map(item => ({
-    month: item.month,
-    revenue: parseFloat(item.revenue) || 0
+  const monthlyRevenueComparisonData = (data.monthly_revenue_chart || []).map((item, idx) => ({
+    name: item.month || `Month ${idx + 1}`,
+    revenue: Number(item.revenue || 0),
+    month_index: item.month_index ?? idx,
   }));
 
-  const yearlyRevenueComparisonData = (data.yearly_revenue_chart || []).map(item => ({
-    year: item.year.toString(),
-    revenue: parseFloat(item.revenue) || 0
+  const yearlyRevenueComparisonData = (data.yearly_revenue_chart || []).map((item) => ({
+    name: String(item.year),
+    revenue: Number(item.revenue || 0),
   }));
 
-  // Combined revenue data for the main chart
-  const getRevenueData = () => {
-    switch(timeFilter) {
-      case "weekly":
-        return weeklyRevenueComparisonData;
-      case "monthly":
-        return monthlyRevenueComparisonData;
-      case "yearly":
-        return yearlyRevenueComparisonData;
-      default:
-        return weeklyRevenueComparisonData;
+  const getRevenueDataAndKey = () => {
+    switch (timeFilter) {
+      case "weekly": return { data: weeklyRevenueComparisonData, xKey: "name" };
+      case "monthly": return { data: monthlyRevenueComparisonData, xKey: "name" };
+      case "yearly": return { data: yearlyRevenueComparisonData, xKey: "name" };
+      default: return { data: weeklyRevenueComparisonData, xKey: "name" };
     }
   };
 
-  const revenueData = getRevenueData();
+  const { data: revenueData, xKey: revenueXKey } = getRevenueDataAndKey();
+
 
   // Weekly Performance Data
   const weeklyPerformanceData = [
@@ -328,10 +326,7 @@ export default function Dashboard() {
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={revenueData}>
-              <XAxis 
-                dataKey={timeFilter === "weekly" ? "week" : timeFilter === "monthly" ? "month" : "year"} 
-                stroke="#57534e" 
-              />
+              <XAxis dataKey={revenueXKey} stroke="#57534e" />
               <YAxis 
                 stroke="#57534e" 
                 tickFormatter={(value) => 
