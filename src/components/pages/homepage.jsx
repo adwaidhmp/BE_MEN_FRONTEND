@@ -28,13 +28,23 @@ function Homepage() {
   const { cart } = useSelector((state) => state.cart);
   const { data: categoryData } = useSelector((state) => state.adminCategory.categories);
   console.log("raw categories:", categoryData);
-  const categories = [
-  { value: "all", label: "All Products" },
+const rawCats = categoryData?.results ?? (Array.isArray(categoryData) ? categoryData : []);
 
-  ...(categoryData?.results?.map((cat) => ({
-    value: cat.slug || cat.name.toLowerCase(),
-    label: cat.name,
-  })) || [])
+// build categories safely
+const categories = [
+  { value: "all", label: "All Products" },
+  ...rawCats.map((cat) => {
+    const id = cat?.id ?? Math.random().toString(36).slice(2, 9);
+    // prefer slug, then name, then `category` field, then fallback text
+    const label = String(cat?.name ?? cat?.category ?? cat?.title ?? `Category ${id}`).trim();
+    // prefer explicit slug, otherwise create from label (safe toLowerCase on guaranteed string)
+    const slug = cat?.slug || label.toLowerCase().replace(/\s+/g, "-");
+    return {
+      id,
+      value: slug,   // or use id if your products endpoint expects category id
+      label
+    };
+  }),
 ];
 
 
