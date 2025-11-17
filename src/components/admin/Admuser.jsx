@@ -161,7 +161,7 @@ export default function Users() {
           </p>
         </div>
       ) : (
-        <div className={`bg-white rounded-xl border border-stone-200 overflow-hidden ${selectedUser ? 'blur-sm' : ''}`}>
+        <div className={`bg-white rounded-xl border border-stone-200  ${selectedUser ? 'blur-sm' : ''}`}>
           <table className="w-full">
             <thead className="bg-stone-900 text-amber-50">
               <tr>
