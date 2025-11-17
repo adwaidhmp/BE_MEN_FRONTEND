@@ -142,7 +142,7 @@ const unreadCount = notifications?.filter(n => !n.read)?.length || 0;
                   to="/login"
                   className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 transition-all border border-amber-600 hover:border-amber-700 group"
                 >
-                  <User className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  <User className="w-2 h-4 group-hover:scale-110 transition-transform" />
                   <span className="text-xs">Login</span>
                 </Link>
               )}
