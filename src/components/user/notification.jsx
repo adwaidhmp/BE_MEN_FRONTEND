@@ -98,7 +98,7 @@ export default function NotificationComponent() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto pt-16 md:pt-20">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6 p-4">
         <div className="w-10 h-10 rounded-full bg-amber-600 flex items-center justify-center">
