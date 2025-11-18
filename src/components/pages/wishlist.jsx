@@ -120,7 +120,7 @@ function Wishlist() {
                       dispatch(removeFromWishlist(product.id));
                       toast.info("Removed from collection");
                     }}
-                    className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white border border-stone-200"
+                    className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full  hover:bg-white border border-stone-200"
                   >
                     <Heart className="w-4 h-4 fill-red-500 text-red-500" />
                   </button>
