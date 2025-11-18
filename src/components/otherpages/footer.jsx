@@ -4,8 +4,8 @@ import { Mail, Phone, MapPin } from "lucide-react";
 function Footer() {
   return (
     <footer className="bg-stone-900 text-amber-50 border-t border-stone-700">
-      <div className="w-full px-6 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-8 mb-6">
+      <div className="w-full px-8 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-8 mb-1">
           {/* Brand Info - Left */}
           <div className="text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-3 mb-3">

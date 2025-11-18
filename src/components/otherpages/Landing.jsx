@@ -7,12 +7,22 @@ import Navbar from "./navbar";
 export default function Landing() {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const handleClick = (e) => {
+    e.preventDefault();
+    setIsExpanded(true);
+    
+    // Navigate after animation completes
+    setTimeout(() => {
+      window.location.href = '/home';
+    }, 1000);
+  };
+
   return (
     <div className="min-h-screen bg-amber-50 text-stone-900 font-sans">
       {/* Hero Section */}
-      <div className={`relative bg-stone-900 overflow-hidden transition-all duration-700 ease-in-out ${
-        isExpanded ? 'h-screen' : 'h-[85vh]'
-      } flex items-center justify-center`}>
+      <div className={`relative bg-stone-900 overflow-hidden flex items-center justify-center transition-all duration-1000 ease-in-out ${
+        isExpanded ? 'h-screen -translate-y-[15vh]' : 'h-[66vh] translate-y-0'
+      }`}>
         {/* Vintage Texture Overlay */}
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1511895426322-d516a7451c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-10 mix-blend-overlay"></div>
         
@@ -37,14 +47,13 @@ export default function Landing() {
           </p>
 
           {/* CTA Button */}
-          <Link
-            to="/home"
-            onClick={() => setIsExpanded(true)}
-            className="inline-flex items-center gap-3 bg-amber-600 text-white px-8 py-4 rounded-lg font-medium hover:bg-amber-700 transition-all border border-amber-600 hover:border-amber-700 group"
+          <button
+            onClick={handleClick}
+            className="inline-flex items-center gap-3 bg-amber-600 text-white px-8 py-4 rounded-lg font-medium hover:bg-amber-700 transition-all border border-amber-600 hover:border-amber-700 group cursor-pointer"
           >
             <span>Discover Collection</span>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          </button>
         </div>
 
         {/* Bottom Gradient Fade */}
@@ -54,7 +63,12 @@ export default function Landing() {
       {/* Divider */}
       <div className="w-full h-px bg-gradient-to-r from-transparent via-stone-300 to-transparent"></div>
 
-      <Footer/>
+      {/* Footer with smooth slide down animation */}
+      <div className={`transition-all duration-1000 ease-in-out ${
+        isExpanded ? 'opacity-0 translate-y-full' : 'opacity-100 translate-y-0'
+      }`}>
+        <Footer/>
+      </div>
     </div>
   );
 }
