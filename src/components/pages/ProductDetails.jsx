@@ -104,7 +104,7 @@ function ProductDetails() {
     }
 
     if (!isInCart) {
-      dispatch(addToCart({ productId: product.id, quantity: 1 }))
+      dispatch(addToCart({ productId: product.id, quantity: buyNowQuantity }))
         .unwrap()
         .then(() => toast.success("Added to cart"))
         .catch(() => toast.error("Failed to add to cart"));
