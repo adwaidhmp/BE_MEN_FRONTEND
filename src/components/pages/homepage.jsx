@@ -90,10 +90,15 @@ function Homepage() {
       }
     }
     fetchProducts();
+  }, [currentPage, selectedCategory, priceSort, searchQuery, dispatch]);
+
+  useEffect(() => {
+  if (user) {
     dispatch(fetchCart());
     dispatch(fetchWishlist());
     dispatch(fetchNotifications());
-  }, [currentPage, selectedCategory, priceSort, searchQuery, dispatch]);
+  }
+}, [user, dispatch]);
 
   return (
     <div className="min-h-screen bg-amber-50">
