@@ -103,7 +103,7 @@ function Homepage() {
   return (
     <div className="min-h-screen bg-amber-50">
       {/* Header */}
-      <div className="relative bg-stone-900 text-amber-50 py-24  mt-14 overflow-hidden">
+      <div className="relative bg-stone-900 text-amber-50 py-24  overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1511895426322-d516a7451c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
         <div className="max-w-6xl mx-auto text-center relative z-10">
           <div className="inline-block border border-amber-200/30 px-6 py-2 rounded-full mb-6">
