@@ -6,8 +6,8 @@ import Footer from "../otherpages/footer";
 import { addToCart, fetchCart } from "../redux/slice/cartSlice";
 import { toast } from "react-toastify";
 import { fetchAdminCategories } from "../redux/slice/adminCategorySlice"
-import {fetchWishlist} from "../redux/slice/wishlistSlice"
-import {fetchNotifications } from "../redux/slice/NotificationSlice"
+import { fetchWishlist } from "../redux/slice/wishlistSlice"
+import { fetchNotifications } from "../redux/slice/NotificationSlice"
 
 function Homepage() {
   const [products, setProducts] = useState([]);
@@ -18,6 +18,7 @@ function Homepage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // New loading state
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -48,7 +49,6 @@ function Homepage() {
     }),
   ];
 
-
   const getStockDisplay = (stock) => {
     if (stock === 0) return { text: "Out of Stock", color: "text-red-700 border-red-200" };
     if (stock === 1) return { text: "Last One", color: "text-amber-700 border-amber-200" };
@@ -71,6 +71,7 @@ function Homepage() {
   // Fetch products from backend
   useEffect(() => {
     async function fetchProducts() {
+      setIsLoading(true);
       setIsLoaded(false);
       try {
         let url = `https://bemen.duckdns.org/api/v1/user/products/?page=${currentPage}`;
@@ -79,31 +80,64 @@ function Homepage() {
         if (priceSort === "low-high") url += `&ordering=price`;
         else if (priceSort === "high-low") url += `&ordering=-price`;
 
-
         const response = await fetch(url);
         const data = await response.json();
         setProducts(data.results);
         setTotalPages(data.total_pages);
-        setTimeout(() => setIsLoaded(true), 100);
+        setTimeout(() => {
+          setIsLoaded(true);
+          setIsLoading(false);
+        }, 100);
       } catch (error) {
         console.error("Error fetching products:", error);
+        setIsLoading(false);
       }
     }
     fetchProducts();
   }, [currentPage, selectedCategory, priceSort, searchQuery, dispatch]);
 
   useEffect(() => {
-  if (user) {
-    dispatch(fetchCart());
-    dispatch(fetchWishlist());
-    dispatch(fetchNotifications());
-  }
-}, [user, dispatch]);
+    if (user) {
+      dispatch(fetchCart());
+      dispatch(fetchWishlist());
+      dispatch(fetchNotifications());
+    }
+  }, [user, dispatch]);
+
+  // Loading Window Component
+  const LoadingWindow = () => (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+        <div className="flex flex-col items-center">
+          {/* Spinner */}
+          <div className="w-16 h-16 border-4 border-amber-200 border-t-stone-900 rounded-full animate-spin mb-4"></div>
+          
+          {/* Loading Text */}
+          <h3 className="text-xl font-serif font-normal text-stone-900 mb-2">
+            Discovering Pieces
+          </h3>
+          <p className="text-stone-600 text-center mb-4">
+            Curating our collection for you...
+          </p>
+          
+          {/* Progress Bar */}
+          <div className="w-full bg-stone-200 rounded-full h-2 mb-2">
+            <div className="bg-stone-900 h-2 rounded-full animate-pulse w-3/4"></div>
+          </div>
+          
+          <span className="text-xs text-stone-500">Loading timeless essentials</span>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-amber-50">
+      {/* Loading Window */}
+      {isLoading && <LoadingWindow />}
+
       {/* Header */}
-      <div className="relative bg-stone-900 text-amber-50 py-24  overflow-hidden">
+      <div className="relative bg-stone-900 text-amber-50 py-24 overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1511895426322-d516a7451c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
         <div className="max-w-6xl mx-auto text-center relative z-10">
           <div className="inline-block border border-amber-200/30 px-6 py-2 rounded-full mb-6">
@@ -187,7 +221,7 @@ function Homepage() {
 
         {/* Products Grid */}
         {isLoaded && products.length === 0 ? (
-          <div className="text-center py-24 ">
+          <div className="text-center py-24">
             <h3 className="text-xl font-serif font-normal text-stone-900 mb-2">No pieces found</h3>
             <p className="text-stone-600 max-w-md mx-auto">
               Try adjusting your search or filters to discover our collection
@@ -270,7 +304,6 @@ function Homepage() {
                           </>
                         )}
                       </button>
-
                     </div>
                   </div>
                 </div>
@@ -280,20 +313,22 @@ function Homepage() {
         )}
 
         {/* Pagination */}
-        <div className="flex justify-center mt-12 gap-2">
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i + 1}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`px-4 py-2 border rounded-lg ${currentPage === i + 1
-                ? "bg-stone-900 text-amber-50"
-                : "bg-white text-stone-900 hover:bg-stone-100"
-                }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
+        {!isLoading && (
+          <div className="flex justify-center mt-12 gap-2">
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i + 1}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`px-4 py-2 border rounded-lg ${currentPage === i + 1
+                  ? "bg-stone-900 text-amber-50"
+                  : "bg-white text-stone-900 hover:bg-stone-100"
+                  }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <Footer />
