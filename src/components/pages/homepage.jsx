@@ -104,38 +104,8 @@ function Homepage() {
     }
   }, [user, dispatch]);
 
-  // Loading Window Component
-  const LoadingWindow = () => (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
-        <div className="flex flex-col items-center">
-          {/* Spinner */}
-          <div className="w-16 h-16 border-4 border-amber-200 border-t-stone-900 rounded-full animate-spin mb-4"></div>
-          
-          {/* Loading Text */}
-          <h3 className="text-xl font-serif font-normal text-stone-900 mb-2">
-            Discovering Pieces
-          </h3>
-          <p className="text-stone-600 text-center mb-4">
-            Curating our collection for you...
-          </p>
-          
-          {/* Progress Bar */}
-          <div className="w-full bg-stone-200 rounded-full h-2 mb-2">
-            <div className="bg-stone-900 h-2 rounded-full animate-pulse w-3/4"></div>
-          </div>
-          
-          <span className="text-xs text-stone-500">Loading timeless essentials</span>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-amber-50">
-      {/* Loading Window */}
-      {isLoading && <LoadingWindow />}
-
       {/* Header */}
       <div className="relative bg-stone-900 text-amber-50 py-24 overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1511895426322-d516a7451c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
@@ -219,8 +189,17 @@ function Homepage() {
           </div>
         )}
 
-        {/* Products Grid */}
-        {isLoaded && products.length === 0 ? (
+        {/* Products Grid with Loading */}
+        {isLoading ? (
+          // Loading State
+          <div className="flex justify-center items-center py-24">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-amber-200 border-t-stone-900 rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-stone-600">Loading timeless pieces...</p>
+            </div>
+          </div>
+        ) : isLoaded && products.length === 0 ? (
+          // No Products State
           <div className="text-center py-24">
             <h3 className="text-xl font-serif font-normal text-stone-900 mb-2">No pieces found</h3>
             <p className="text-stone-600 max-w-md mx-auto">
@@ -228,6 +207,7 @@ function Homepage() {
             </p>
           </div>
         ) : (
+          // Products Grid
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
             {products.map((product) => {
               const stockInfo = getStockDisplay(product.product_stock);
