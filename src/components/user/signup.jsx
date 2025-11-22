@@ -49,32 +49,61 @@ function Signup() {
     },
     validationSchema,
     onSubmit: async (values) => {
-      try {
-        const formData = new FormData();
-        formData.append("name", values.name);
-        formData.append("email", values.email);
-        formData.append("phone_number", values.phone_number);
-        formData.append("password", values.password);
-        formData.append("password2", values.password2);
-        formData.append("profile_picture", values.profile_picture);
+  try {
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("email", values.email);
+    formData.append("phone_number", values.phone_number);
+    formData.append("password", values.password);
+    formData.append("password2", values.password2);
 
-        for (let [key, value] of formData.entries()) {
-          console.log(`${key}:`, value);
-        }
+    // Only append profile_picture if a file was selected
+    if (values.profile_picture) {
+      formData.append("profile_picture", values.profile_picture);
+    }
 
-        await api.post("signup/", formData,
-          { headers: { "Content-Type": "multipart/form-data" }, withCredentials: true });
+    // Debug: show what you are actually sending
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
 
-        toast.success("Signed up successfully");
-        navigate("/login",{ replace: true });
-      } catch (error) {
-        if (error.response?.data?.email) {
-          toast.error(error.response.data.email[0]);
+    await api.post("signup/", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      withCredentials: true,
+    });
+
+    toast.success("Signed up successfully");
+    navigate("/login", { replace: true });
+  } catch (error) {
+    console.error("Signup error response:", error.response?.data ?? error);
+
+    // If server responded with a validation object (e.g. { email: [...], password: [...], non_field_errors: [...] })
+    const data = error.response?.data;
+    if (data && typeof data === "object") {
+      // Build a user-friendly combined message
+      const messages = [];
+
+      // If DRF returns field: [msg1, msg2], or field: "msg"
+      Object.keys(data).forEach((key) => {
+        const val = data[key];
+        if (Array.isArray(val)) {
+          val.forEach((v) => messages.push(`${key}: ${v}`));
+        } else if (typeof val === "object" && val !== null) {
+          // nested object (rare), stringify small messages
+          messages.push(`${key}: ${JSON.stringify(val)}`);
         } else {
-          toast.error("Signup failed");
+          messages.push(`${key}: ${val}`);
         }
-      }
-    },
+      });
+
+      // Show all messages as individual toasts (or join into one)
+      messages.forEach((m) => toast.error(m));
+    } else {
+      // fallback
+      toast.error("Signup failed");
+    }
+  }
+},
   });
 
   return (
