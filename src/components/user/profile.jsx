@@ -9,7 +9,7 @@ import {
   X, Edit2, Lock, ShoppingBag, Heart, ShoppingCart, LogOut,
   Eye, EyeOff, Save, XCircle, Crown
 } from "lucide-react";
-import {logoutUser, fetchUserProfile, updateUserProfile, changePassword } from "../redux/slice/authSlice"
+import { logoutUser, fetchUserProfile, updateUserProfile, changePassword } from "../redux/slice/authSlice"
 
 
 function Profile({ onClose, profileRef }) {
@@ -51,6 +51,7 @@ function Profile({ onClose, profileRef }) {
       phone_number: Yup.string().matches(/^[0-9]{10}$/, "Phone must be 10 digits").required("Phone required"),
       profile_picture: Yup.mixed().nullable(),
     }),
+    // inside Profile component profileFormik.onSubmit
     onSubmit: async (values) => {
       try {
         const formData = new FormData();
@@ -58,14 +59,20 @@ function Profile({ onClose, profileRef }) {
         formData.append("phone_number", values.phone_number);
         if (values.profile_picture) formData.append("profile_picture", values.profile_picture);
 
+        // this will either resolve with res.data or throw the rejectWithValue payload
         await dispatch(updateUserProfile(formData)).unwrap();
+
+        // single success toast (component level)
         toast.success("Profile updated!");
         setIsEditing(false);
       } catch (err) {
+        // err can be the rejectWithValue payload (string) or an Error object
+        const message = typeof err === "string" ? err : err?.message || "Failed to update profile";
         console.error("Update failed:", err);
-        toast.error("Failed to update profile");
+        toast.error(message);
       }
     },
+
   });
 
   const passwordFormik = useFormik({
@@ -133,8 +140,8 @@ function Profile({ onClose, profileRef }) {
             </div>
             <h2 className="font-serif text-xl">Profile</h2>
           </div>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="p-2 hover:bg-stone-800 rounded-full transition-colors"
           >
             <X className="w-5 h-5" />
@@ -260,14 +267,14 @@ function Profile({ onClose, profileRef }) {
                               field === "current"
                                 ? showCurrent
                                 : field === "new"
-                                ? showNew
-                                : showConfirm;
+                                  ? showNew
+                                  : showConfirm;
                             const toggle =
                               field === "current"
                                 ? setShowCurrent
                                 : field === "new"
-                                ? setShowNew
-                                : setShowConfirm;
+                                  ? setShowNew
+                                  : setShowConfirm;
 
                             return (
                               <div key={i}>
@@ -275,8 +282,8 @@ function Profile({ onClose, profileRef }) {
                                   {field === "current"
                                     ? "Current Password"
                                     : field === "new"
-                                    ? "New Password"
-                                    : "Confirm New Password"}
+                                      ? "New Password"
+                                      : "Confirm New Password"}
                                 </label>
                                 <div className="relative">
                                   <input

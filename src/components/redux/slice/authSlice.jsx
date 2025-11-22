@@ -75,16 +75,23 @@ export const updateUserProfile = createAsyncThunk(
       const res = await api.patch("profile/update/", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      toast.success("Profile updated successfully!");
+      // DO NOT toast here (toast from UI layer instead)
       return res.data;
     } catch (err) {
-      const message = err.response?.data?.detail || "Failed to update profile";
-      toast.error(message);
+      // more robust error extraction
+      const respData = err.response?.data;
+      const message =
+        respData?.detail ||
+        respData?.message ||
+        (typeof respData === "string" ? respData : undefined) ||
+        err.message ||
+        "Failed to update profile";
+
+      // don't toast here — return a meaningful rejected value
       return rejectWithValue(message);
     }
   }
 );
-
 //  CHANGE PASSWORD
 export const changePassword = createAsyncThunk(
   "auth/changePassword",
