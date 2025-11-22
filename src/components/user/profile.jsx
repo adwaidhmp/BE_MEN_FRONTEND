@@ -53,25 +53,65 @@ function Profile({ onClose, profileRef }) {
     }),
     // inside Profile component profileFormik.onSubmit
     onSubmit: async (values) => {
-      try {
-        const formData = new FormData();
-        formData.append("name", values.name);
-        formData.append("phone_number", values.phone_number);
-        if (values.profile_picture) formData.append("profile_picture", values.profile_picture);
+  try {
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("phone_number", values.phone_number);
+    if (values.profile_picture) formData.append("profile_picture", values.profile_picture);
 
-        // this will either resolve with res.data or throw the rejectWithValue payload
-        await dispatch(updateUserProfile(formData)).unwrap();
+    // send via thunk and unwrap to get thrown payload on failure
+    await dispatch(updateUserProfile(formData)).unwrap();
 
-        // single success toast (component level)
-        toast.success("Profile updated!");
-        setIsEditing(false);
-      } catch (err) {
-        // err can be the rejectWithValue payload (string) or an Error object
-        const message = typeof err === "string" ? err : err?.message || "Failed to update profile";
-        console.error("Update failed:", err);
-        toast.error(message);
+    // single success toast (component level)
+    toast.success("Profile updated!");
+    setIsEditing(false);
+  } catch (errorPayloadOrErr) {
+    // unwrap() usually throws the value passed to rejectWithValue
+    // but if someone else throws a full error, handle both
+    const serverData =
+      // if unwrap threw payload directly
+      errorPayloadOrErr ??
+      // if a full axios/error object
+      errorPayloadOrErr?.response?.data ??
+      null;
+
+    // Build messages array (same approach you used in signup)
+    const messages = [];
+
+    if (serverData && typeof serverData === "object") {
+      Object.keys(serverData).forEach((key) => {
+        const val = serverData[key];
+        if (Array.isArray(val)) {
+          val.forEach((v) => messages.push(`${key}: ${v}`));
+        } else if (typeof val === "object" && val !== null) {
+          messages.push(`${key}: ${JSON.stringify(val)}`);
+        } else {
+          messages.push(`${key}: ${val}`);
+        }
+      });
+    } else if (typeof serverData === "string") {
+      messages.push(serverData);
+    } else {
+      // fallback: if we got an Error object with message
+      messages.push(errorPayloadOrErr?.message ?? "Failed to update profile");
+    }
+
+    // Toast each message (or join them into one string if you prefer single toast)
+    messages.forEach((m) => toast.error(m));
+
+    // Optionally set Formik field errors so the message appears inline
+    if (serverData && typeof serverData === "object") {
+      const fieldErrs = {};
+      for (const key of Object.keys(serverData)) {
+        const val = serverData[key];
+        fieldErrs[key] = Array.isArray(val) ? val.join(" ") : String(val);
       }
-    },
+      profileFormik.setErrors(fieldErrs);
+    }
+
+    console.error("Update profile failed:", errorPayloadOrErr);
+  }
+}
 
   });
 

@@ -75,20 +75,11 @@ export const updateUserProfile = createAsyncThunk(
       const res = await api.patch("profile/update/", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      // DO NOT toast here (toast from UI layer instead)
       return res.data;
     } catch (err) {
-      // more robust error extraction
-      const respData = err.response?.data;
-      const message =
-        respData?.detail ||
-        respData?.message ||
-        (typeof respData === "string" ? respData : undefined) ||
-        err.message ||
-        "Failed to update profile";
-
-      // don't toast here — return a meaningful rejected value
-      return rejectWithValue(message);
+      // return the response data (object/array/string) so component can display it
+      const payload = err.response?.data ?? err.message ?? "Failed to update profile";
+      return rejectWithValue(payload);
     }
   }
 );
