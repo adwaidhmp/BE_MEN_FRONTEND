@@ -2,8 +2,28 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Crown } from "lucide-react";
 import Footer from "./footer";
 import Navbar from "./navbar";
+import { useState, useEffect } from "react";
 
 export default function Landing() {
+  const [newArrivals, setNewArrivals] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchNewArrivals();
+  }, []);
+
+  const fetchNewArrivals = async () => {
+    try {
+      const response = await fetch('/api/products/?ordering=-created_at&page_size=5');
+      const data = await response.json();
+      setNewArrivals(data.results || data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching new arrivals:', error);
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-amber-50 text-stone-900 font-sans">
       {/* Hero Section */}
@@ -43,6 +63,79 @@ export default function Landing() {
 
         {/* Bottom Gradient Fade */}
         <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-amber-50 to-transparent"></div>
+      </div>
+
+      {/* New Arrivals Section */}
+      <div className="py-16 px-6 bg-amber-50">
+        <div className="max-w-6xl mx-auto">
+          {/* Section Header */}
+          <div className="text-center mb-12">
+            <h2 className="font-serif text-3xl md:text-4xl text-stone-900 mb-4">
+              New Arrivals
+            </h2>
+            <p className="text-stone-600 max-w-2xl mx-auto">
+              Discover our latest additions, carefully curated for the modern gentleman
+            </p>
+          </div>
+
+          {/* Products Grid */}
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-stone-600">Loading new arrivals...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+              {newArrivals.map((product) => (
+                <div key={product.id} className="group">
+                  {/* Product Image */}
+                  <div className="aspect-square bg-stone-100 rounded-lg mb-4 overflow-hidden relative">
+                    {product.image ? (
+                      <img 
+                        src={product.image} 
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-stone-400">
+                        No Image
+                      </div>
+                    )}
+                    {/* New Badge */}
+                    <div className="absolute top-3 left-3 bg-amber-600 text-white px-2 py-1 rounded text-xs font-medium">
+                      NEW
+                    </div>
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="space-y-2">
+                    <h3 className="font-medium text-stone-900 group-hover:text-amber-700 transition-colors">
+                      {product.name}
+                    </h3>
+                    <p className="text-stone-600 text-sm line-clamp-2">
+                      {product.description}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-stone-900 font-semibold">
+                        ${product.price}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* View All Button */}
+          <div className="text-center mt-12">
+            <Link
+              to="/home"
+              className="inline-flex items-center gap-2 border border-stone-900 text-stone-900 px-6 py-3 rounded-lg font-medium hover:bg-stone-900 hover:text-amber-50 transition-all"
+            >
+              <span>View All Products</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Divider */}
