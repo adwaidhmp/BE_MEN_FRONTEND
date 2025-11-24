@@ -88,9 +88,9 @@ export default function Landing() {
                 <div key={product.id} className="group">
                   {/* Product Image */}
                   <div className="aspect-square bg-stone-100 rounded-lg mb-4 overflow-hidden relative">
-                    {product.image ? (
+                    {product.product_image ? (
                       <img 
-                        src={product.image} 
+                        src={product.product_image} 
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
