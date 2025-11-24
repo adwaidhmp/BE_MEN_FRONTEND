@@ -138,12 +138,12 @@ function Profile({ onClose, profileRef }) {
             new_password: values.new_password,
           })
         ).unwrap();
-        toast.success("Password changed successfully!");
+        // toast.success("Password changed successfully!");
         resetForm();
         setChangePwd(false);
       } catch (err) {
         console.error("Password change failed:", err);
-        toast.error("Failed to change password");
+        // toast.error("Failed to change password");
       }
     },
   });
