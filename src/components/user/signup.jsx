@@ -3,7 +3,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { useState } from "react";
-import { Eye, EyeOff, Crown, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Crown, ArrowRight, ArrowLeft } from "lucide-react"; // Added ArrowLeft
 import api from "../api";
 
 function Signup() {
@@ -158,7 +158,16 @@ function Signup() {
       <div className="min-h-screen flex bg-amber-50">
         {/* Left Side - Branding */}
         <div className="hidden lg:flex lg:w-1/2 bg-stone-900 items-center justify-center p-12 animate-slide-in-left">
-          <div className="max-w-md text-center">
+          <div className="max-w-md text-center relative">
+            {/* Back Button for larger screens */}
+            <button
+              onClick={() => navigate("/")}
+              className="absolute top-0 left-0 flex items-center gap-2 text-amber-200/80 hover:text-amber-50 transition-colors group"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-medium">Back to Home</span>
+            </button>
+            
             <div className="mb-8">
               <div className="w-40 h-40 mx-auto bg-amber-600 rounded-2xl flex items-center justify-center shadow-2xl">
                 <div className="text-center">
@@ -180,6 +189,15 @@ function Signup() {
         {/* Right Side - Form */}
         <div className="flex-1 flex items-center justify-center p-8 bg-amber-50 animate-slide-in-right">
           <div className="max-w-2xl w-full">
+            {/* Back Button for mobile/tablet */}
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2 text-stone-600 hover:text-stone-900 mb-6 transition-colors group animate-fade-in-up lg:hidden"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-medium">Back to Home</span>
+            </button>
+
             <div className="mb-8 animate-fade-in-up">
               <div className="flex items-center gap-3 mb-4 lg:hidden">
                 <div className="w-10 h-10 rounded-full bg-amber-600 flex items-center justify-center">
