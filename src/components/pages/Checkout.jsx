@@ -66,104 +66,104 @@ function CheckoutPage() {
             document.body.appendChild(script);
         });
 
-const handleCheckout = async (values, { setSubmitting }) => {
-  setSubmitting(true);
+    const handleCheckout = async (values, { setSubmitting }) => {
+        setSubmitting(true);
 
-  try {
-    if (!items || items.length === 0) {
-      toast.error("No items in cart");
-      setSubmitting(false);
-      return;
-    }
+        try {
+            if (!items || items.length === 0) {
+                toast.error("No items in cart");
+                setSubmitting(false);
+                return;
+            }
 
-    const shipping_address = `${values.name}, ${values.street}, ${values.city}, ${values.state}, ${values.country} - ${values.pincode}`;
+            const shipping_address = `${values.name}, ${values.street}, ${values.city}, ${values.state}, ${values.country} - ${values.pincode}`;
 
-    const payload = {
-      items,
-      shipping_address,
-      phone: values.phone,
-      payment_method: values.payment_method,
+            const payload = {
+                items,
+                shipping_address,
+                phone: values.phone,
+                payment_method: values.payment_method,
+            };
+
+            const resultAction = await dispatch(placeOrder(payload));
+
+            if (!placeOrder.fulfilled.match(resultAction)) {
+                const errorMsg = resultAction.payload?.error || resultAction.error?.message || "Checkout failed";
+                toast.error(errorMsg);
+                setSubmitting(false);
+                return;
+            }
+
+            const orderData = resultAction.payload;
+
+            // ✅ COD flow
+            if (values.payment_method === "COD") {
+                toast.success("Order placed successfully!");
+                dispatch(fetchOrders());
+                navigate("/order-success", { state: { order: orderData } });
+                return;
+            }
+
+            // ✅ Razorpay flow
+            if (values.payment_method === "RAZORPAY") {
+                // Load Razorpay SDK
+                const loaded = await new Promise((resolve) => {
+                    if (window.Razorpay) return resolve(true);
+                    const script = document.createElement("script");
+                    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+                    script.onload = () => resolve(true);
+                    script.onerror = () => resolve(false);
+                    document.body.appendChild(script);
+                });
+
+                if (!loaded) {
+                    toast.error("Razorpay SDK failed to load");
+                    setSubmitting(false);
+                    return;
+                }
+
+                const options = {
+                    key: orderData.razorpay_key,
+                    amount: orderData.amount,
+                    currency: orderData.currency,
+                    name: "BE MEN",
+                    description: "Order Payment",
+                    order_id: orderData.razorpay_order_id,
+                    handler: async function (response) {
+                        try {
+                            await api.post("/checkout/razorpay/verify/", {
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature,
+                                orders_payload: orderData.orders_payload,
+                            });
+
+                            toast.success("Payment successful!");
+                            dispatch(fetchOrders());
+                            navigate("/order-success", { state: { order: orderData } });
+                        } catch (err) {
+                            console.error(err);
+                            toast.error("Payment verification failed. Order not placed.");
+                        }
+                    },
+                    prefill: {
+                        name: values.name,
+                        email: "user@example.com", // optional
+                        contact: values.phone,
+                    },
+                    theme: { color: "#b45309" },
+                };
+
+                const rzp = new window.Razorpay(options);
+                rzp.open();
+            }
+        } catch (err) {
+            console.error("Checkout Error:", err);
+            toast.error("Checkout failed due to unexpected error");
+        } finally {
+            setSubmitting(false);
+        }
     };
-
-    const resultAction = await dispatch(placeOrder(payload));
-
-    if (!placeOrder.fulfilled.match(resultAction)) {
-      const errorMsg = resultAction.payload?.error || resultAction.error?.message || "Checkout failed";
-      toast.error(errorMsg);
-      setSubmitting(false);
-      return;
-    }
-
-    const orderData = resultAction.payload;
-
-    // ✅ COD flow
-    if (values.payment_method === "COD") {
-      toast.success("Order placed successfully!");
-      dispatch(fetchOrders());
-      navigate("/order-success", { state: { order: orderData } });
-      return;
-    }
-
-    // ✅ Razorpay flow
-    if (values.payment_method === "RAZORPAY") {
-      // Load Razorpay SDK
-      const loaded = await new Promise((resolve) => {
-        if (window.Razorpay) return resolve(true);
-        const script = document.createElement("script");
-        script.src = "https://checkout.razorpay.com/v1/checkout.js";
-        script.onload = () => resolve(true);
-        script.onerror = () => resolve(false);
-        document.body.appendChild(script);
-      });
-
-      if (!loaded) {
-        toast.error("Razorpay SDK failed to load");
-        setSubmitting(false);
-        return;
-      }
-
-      const options = {
-        key: orderData.razorpay_key,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: "BE MEN",
-        description: "Order Payment",
-        order_id: orderData.razorpay_order_id,
-        handler: async function (response) {
-          try {
-            await api.post("/checkout/razorpay/verify/", {
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-              orders_payload: orderData.orders_payload,
-            });
-
-            toast.success("Payment successful!");
-            dispatch(fetchOrders());
-            navigate("/order-success", { state: { order: orderData } });
-          } catch (err) {
-            console.error(err);
-            toast.error("Payment verification failed. Order not placed.");
-          }
-        },
-        prefill: {
-          name: values.name,
-          email: "user@example.com", // optional
-          contact: values.phone,
-        },
-        theme: { color: "#b45309" },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    }
-  } catch (err) {
-    console.error("Checkout Error:", err);
-    toast.error("Checkout failed due to unexpected error");
-  } finally {
-    setSubmitting(false);
-  }
-};
 
 
 
@@ -260,11 +260,10 @@ const handleCheckout = async (values, { setSubmitting }) => {
                                             {["COD", "RAZORPAY"].map((method) => (
                                                 <label
                                                     key={method}
-                                                    className={`flex items-center gap-4 p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                                                        values.payment_method === method
+                                                    className={`flex items-center gap-4 p-4 border-2 rounded-lg cursor-pointer transition-all ${values.payment_method === method
                                                             ? "border-amber-500 bg-amber-50"
                                                             : "border-stone-200 hover:border-stone-300"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     <Field
                                                         type="radio"
@@ -296,11 +295,10 @@ const handleCheckout = async (values, { setSubmitting }) => {
                                     <button
                                         type="submit"
                                         disabled={isSubmitting || loading || items.length === 0}
-                                        className={`w-full mt-6 py-4 rounded-lg font-medium text-white transition-all transform flex items-center justify-center gap-2 ${
-                                            isSubmitting || loading || items.length === 0
+                                        className={`w-full mt-6 py-4 rounded-lg font-medium text-white transition-all transform flex items-center justify-center gap-2 ${isSubmitting || loading || items.length === 0
                                                 ? "bg-stone-400 cursor-not-allowed"
                                                 : "bg-amber-600 hover:bg-amber-700 hover:shadow-lg active:scale-95 border border-amber-600"
-                                        }`}
+                                            }`}
                                     >
                                         {isSubmitting || loading ? (
                                             <div className="flex items-center justify-center gap-2">
@@ -337,9 +335,25 @@ const handleCheckout = async (values, { setSubmitting }) => {
                                             {(i.product?.image || i.product?.product_image || i.image) && (
                                                 <img
                                                     src={
-                                                        Array.isArray(i.product?.image)
-                                                            ? i.product.image[0]
-                                                            : i.product?.image || i.product?.product_image || (Array.isArray(i.image) ? i.image[0] : i.image)
+                                                        (() => {
+                                                            const p = i.product;
+
+                                                            // pick raw image path from different shapes
+                                                            const raw =
+                                                                Array.isArray(p?.image)
+                                                                    ? p.image[0]
+                                                                    : p?.image ||
+                                                                    p?.product_image ||
+                                                                    (Array.isArray(i.image) ? i.image[0] : i.image);
+
+                                                            if (!raw) return "/placeholder.png"; // optional fallback
+
+                                                            // if already full http/https URL (S3)
+                                                            if (typeof raw === "string" && raw.startsWith("http")) return raw;
+
+                                                            // otherwise prefix your domain
+                                                            return `https://bemen.duckdns.org${raw}`;
+                                                        })()
                                                     }
                                                     alt={i.product?.name || i.name}
                                                     className="w-16 h-16 rounded-lg object-cover border border-stone-200"
