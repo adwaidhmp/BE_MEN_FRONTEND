@@ -261,8 +261,8 @@ function CheckoutPage() {
                                                 <label
                                                     key={method}
                                                     className={`flex items-center gap-4 p-4 border-2 rounded-lg cursor-pointer transition-all ${values.payment_method === method
-                                                            ? "border-amber-500 bg-amber-50"
-                                                            : "border-stone-200 hover:border-stone-300"
+                                                        ? "border-amber-500 bg-amber-50"
+                                                        : "border-stone-200 hover:border-stone-300"
                                                         }`}
                                                 >
                                                     <Field
@@ -296,8 +296,8 @@ function CheckoutPage() {
                                         type="submit"
                                         disabled={isSubmitting || loading || items.length === 0}
                                         className={`w-full mt-6 py-4 rounded-lg font-medium text-white transition-all transform flex items-center justify-center gap-2 ${isSubmitting || loading || items.length === 0
-                                                ? "bg-stone-400 cursor-not-allowed"
-                                                : "bg-amber-600 hover:bg-amber-700 hover:shadow-lg active:scale-95 border border-amber-600"
+                                            ? "bg-stone-400 cursor-not-allowed"
+                                            : "bg-amber-600 hover:bg-amber-700 hover:shadow-lg active:scale-95 border border-amber-600"
                                             }`}
                                     >
                                         {isSubmitting || loading ? (
@@ -336,28 +336,22 @@ function CheckoutPage() {
                                                 <img
                                                     src={
                                                         (() => {
-                                                            const p = i.product;
-
-                                                            // pick raw image path from different shapes
-                                                            const raw =
-                                                                Array.isArray(p?.image)
-                                                                    ? p.image[0]
-                                                                    : p?.image ||
-                                                                    p?.product_image ||
+                                                            let img =
+                                                                Array.isArray(i.product?.image)
+                                                                    ? i.product.image[0]
+                                                                    : i.product?.image ||
+                                                                    i.product?.product_image ||
                                                                     (Array.isArray(i.image) ? i.image[0] : i.image);
 
-                                                            if (!raw) return "/placeholder.png"; // optional fallback
-
-                                                            // if already full http/https URL (S3)
-                                                            if (typeof raw === "string" && raw.startsWith("http")) return raw;
-
-                                                            // otherwise prefix your domain
-                                                            return `https://bemen.duckdns.org${raw}`;
+                                                            if (!img) return "/placeholder.png";
+                                                            if (img.startsWith("http")) return img;
+                                                            return `https://bemen.duckdns.org${img}`;
                                                         })()
                                                     }
                                                     alt={i.product?.name || i.name}
                                                     className="w-16 h-16 rounded-lg object-cover border border-stone-200"
                                                 />
+
                                             )}
                                             <div>
                                                 <p className="font-medium text-stone-900">{i.product?.name || i.name}</p>
