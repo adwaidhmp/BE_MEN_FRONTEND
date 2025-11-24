@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Crown } from "lucide-react";
 import Footer from "./footer";
-import Navbar from "./navbar";
 import { useState, useEffect } from "react";
 
 export default function Landing() {
@@ -14,7 +13,7 @@ export default function Landing() {
 
   const fetchNewArrivals = async () => {
     try {
-      const response = await fetch('/api/products/?ordering=-created_at&page_size=5');
+      const response = await fetch('https://bemen.duckdns.org/api/v1/user/products/?ordering=-created_at&page_size=5');
       const data = await response.json();
       setNewArrivals(data.results || data);
       setLoading(false);
