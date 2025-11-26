@@ -2,11 +2,12 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Crown } from "lucide-react";
 import Footer from "./footer";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Landing() {
   const [newArrivals, setNewArrivals] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const navigate = useNavigate();
   useEffect(() => {
     fetchNewArrivals();
   }, []);
@@ -85,7 +86,8 @@ export default function Landing() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
               {newArrivals.map((product) => (
-                <div key={product.id} className="group">
+                <div key={product.id} className="group"
+                onClick={() => navigate(`/product/${product.id}`)}>
                   {/* Product Image */}
                   <div className="aspect-square bg-stone-100 rounded-lg mb-4 overflow-hidden relative">
                     {product.product_image ? (
