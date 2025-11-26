@@ -119,7 +119,7 @@ function ProductDetails() {
       {/* Back Button */}
       <div className="max-w-7xl mx-auto px-4 mb-8">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/home")}
           className="flex items-center gap-2 text-stone-600 hover:text-stone-900 transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
